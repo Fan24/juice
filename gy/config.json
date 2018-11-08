@@ -1,0 +1,9 @@
+{
+  "os_type": "windows",
+  "proj_path": "C:/Users/Gy/PycharmProjects/OnionMall",
+  "chrome_user_dir": "d:/chrome/db11",
+  "chrome_user_dir_chadang": "d:/chrome/chadang",
+  "chrome_user_dir_boc": "d:/chrome/boc",
+  "chrome_execute_path" : "C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe",
+  "is_headless": false
+}
