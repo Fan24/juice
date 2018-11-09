@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 baseDir="/home/ap/fan/OnionMall/"
+config_file="config.json"
 
 PON_PATH=
 if [ "$PYTHONPATH" = "" ];then
@@ -10,6 +11,8 @@ else
 fi
 export PYTHONPATH=$PON_PATH
 export PROJ_PATH=$baseDir
+export CONF_FILE=$config_file
+
 cd $baseDir
 srcDir="/home/ap/fan/OnionMall/gy/jd/"
 pythonSrc="gf_friday.py"
