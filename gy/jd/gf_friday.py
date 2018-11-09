@@ -27,7 +27,7 @@ def visitActivity(driver, userInfo):
 def blockUntilStart():
     ct = datetime.datetime.now()
     st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour + 1)
-    st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, ct.second + 3)
+    #st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, ct.second + 3)
     gap = math.floor((st - ct).total_seconds()) - 2
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
     time.sleep(gap)
