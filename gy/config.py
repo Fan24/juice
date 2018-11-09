@@ -6,7 +6,10 @@ class GyConfig:
         PROJ_PATH= "E:/OnionMall/"
         if "PROJ_PATH" in os.environ:
             PROJ_PATH = os.environ['PROJ_PATH']
-        config_file='%sgy/config.json' % PROJ_PATH
+        file_name = "config.win"
+        if "CONF_FILE" in os.environ:
+            file_name = os.environ['CONF_FILE']
+        config_file='%sgy/%s' % (PROJ_PATH, file_name)
         self.proj_path=PROJ_PATH
         self.user_info = {"username": "13119182428", "password": "lcl12345"}
         with open(config_file) as fp:
