@@ -91,7 +91,7 @@ def get_coupon_no(driver, cart_ids_str):
         $.ajax({
             url:'https://m.msyc.cc/couponRest/oneUserUsableCouponList',
             type:'post',
-            'dataType':'json',
+            dataType:'json',
             async:false,
             data:{"cartIds": cartIds},
             success:function(data){
@@ -107,6 +107,8 @@ def get_coupon_no(driver, cart_ids_str):
     return driver.execute_script(js, cart_ids_str)
 
 
+
+
 def order_from_cart(driver):
     addr_id = get_address_id(driver)
     if not addr_id:
@@ -116,6 +118,27 @@ def order_from_cart(driver):
     cart_ids = get_cart_list(driver)
     cart_ids_str = to_cart_ids_str(cart_ids)
     coupon_no = get_coupon_no(driver, cart_ids_str)
+
+    js = r'''
+        var target_url = 'https://m.msyc.cc/app/sodrest/createSod/v2?t=' + new Date().getTime();
+        $.ajax({
+            "type": "post",
+            "data": {
+                "client": "web",
+                "tmnId": "200392",
+                "cartIds": arguments[1],
+                "addressId": arguments[2],
+                "isSingle": 0
+            },
+            "url": target_url,
+            "dataType": "json",
+            success: function (result) {
+                
+            }
+        }); 
+    
+    '''
+
     print(coupon_no)
     return True
 
