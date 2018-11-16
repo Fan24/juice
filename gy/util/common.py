@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 import time
-import datetime
+import datetime,time,json
 import math
-
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from gy import config
+import traceback
 
 def block_until_start(quick):
     block_until_start_by_second(quick, 2)
@@ -33,3 +36,33 @@ def block_until_start_by_second(quick, sec_ahead):
     gap = math.floor((st - ct).total_seconds()) - sec_ahead
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
     time.sleep(gap)
+
+
+def build_chrome(gy_config, chrome_user_dir_key=None):
+    chrome_options = Options()
+    conf = gy_config
+    if conf.is_headless():
+        chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-web-security')
+    # chrome_options.add_argument(
+    #    'user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"')
+    chrome_options.add_argument('--lang=zh-CN.UTF-8')
+    user_data_dir = conf.get_chrome_user_dir()
+    if chrome_user_dir_key:
+        user_data_dir = conf.get_chrome_user_dir_by_key(chrome_user_dir_key)
+
+    print(user_data_dir)
+    chrome_options.add_argument('--user-data-dir=%s' %  user_data_dir)
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    if conf.get_http_proxy():
+        print('HTTP_PROXY:', conf.get_http_proxy())
+        chrome_options.add_argument('--proxy-server=%s' % conf.get_http_proxy())
+
+    if conf.get_chrome_executable_path():
+        driver = webdriver.Chrome(executable_path=conf.get_chrome_executable_path(), options=chrome_options)
+    else:
+        driver = webdriver.Chrome(options=chrome_options)
+
+    driver.set_window_size(640, 700)
+    return driver

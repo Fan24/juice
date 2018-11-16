@@ -5,5 +5,6 @@
   "chrome_user_dir_chadang": "d:/chrome/chadang",
   "chrome_user_dir_boc": "d:/chrome/boc",
   "chrome_execute_path" : "C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe",
+  "http_proxy" : "http://workproxy:7081",
   "is_headless": false
 }
