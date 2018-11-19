@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from gy import config
 from gy.util import common
 import time, json
-import math
+import sys
 import traceback
 
 
@@ -107,9 +107,40 @@ def get_coupon_no(driver, cart_ids_str):
     return driver.execute_script(js, cart_ids_str)
 
 
+def wait_order_result(driver, id_key):
+    script = r'''
+        return sessionStorage['arguments[0]'];
+    '''
+    results = []
+
+    recheck = 20
+    for x in range(1, recheck):
+        for key in id_key:
+            result = driver.execute_script(script, key)
+            if result is None:
+                results.clear()
+                break
+            results.append(result)
+        print('len_result:%d, len_id_key:%d' % (len(results), len(id_key)))
+        if len(results) == len(id_key):
+            break
+        print('#%d waiting result.' % x)
+        time.sleep(3)
+        if x == recheck - 1:
+            print('We have ckecked with %d time(s) with uncerntain result, return fail and abort!' % x)
+    if len(results) != len(id_key):
+        print('Cloud not find all result')
+        return False
+    for result in results:
+        print(result)
+        json_result = json.loads(result)
+        if json_result['errCode'] == 10000:
+            print('Order no is:', json_result['sodNo'])
+            return True
+    return False
 
 
-def order_from_cart(driver):
+def order_from_cart(driver, hour=None, minute=None):
     addr_id = get_address_id(driver)
     if not addr_id:
         print('address id empty,exit')
@@ -118,29 +149,40 @@ def order_from_cart(driver):
     cart_ids = get_cart_list(driver)
     cart_ids_str = to_cart_ids_str(cart_ids)
     coupon_no = get_coupon_no(driver, cart_ids_str)
+    print('Coupon no:', coupon_no)
+    common.block_until_start_with_time(False, hour, minute)
 
     js = r'''
         var target_url = 'https://m.msyc.cc/app/sodrest/createSod/v2?t=' + new Date().getTime();
+        console.info(target_url);
+        console.info(arguments[0]);
+        console.info(JSON.stringify(arguments[1]));
+        console.info(arguments[2]);
         $.ajax({
             "type": "post",
             "data": {
                 "client": "web",
                 "tmnId": "200392",
-                "cartIds": arguments[1],
+                "cartIds": JSON.stringify(arguments[1]),
                 "addressId": arguments[2],
-                "isSingle": 0
+                "isSingle": 0,
+                "couponNo": ""
             },
             "url": target_url,
             "dataType": "json",
             success: function (result) {
-                
+                console.info(JSON.stringify(result));
+                sessionStorage['arguments[0]']=JSON.stringify(result);
             }
         }); 
-    
     '''
-
-    print(coupon_no)
-    return True
+    id_key = []
+    for c in range(1, 7):
+        key = 'ID%d' % c
+        print(key)
+        id_key.append(key)
+        driver.execute_script(js, key, cart_ids, addr_id)
+    return wait_order_result(driver, id_key)
 
 
 conf = config.GyConfig()
@@ -148,10 +190,17 @@ user_info = conf.get_user_info()
 driver = common.build_chrome(conf)
 try:
     prepare_env(driver, user_info)
-    order_from_cart(driver)
+    hour = None
+    minute = None
+    if len(sys.argv) > 3:
+        hour = int(sys.argv[2])
+        minute = int(sys.argv[3])
+        print('Start time %02d:%02d' % (hour, minute))
+    order_from_cart(driver, hour, minute)
 except:
     traceback.print_exc()
 finally:
+    input('please input something to end!')
     driver.quit()
     print('END.OF.PROG')
 

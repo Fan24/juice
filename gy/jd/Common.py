@@ -57,6 +57,7 @@ def block_precise_until_start(quick):
             break
             print(diff)
 
+
 def block_until_start_by_second(quick, sec_ahead):
     ct = datetime.datetime.now()
     st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour + 1)

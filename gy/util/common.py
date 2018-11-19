@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from gy import config
 import traceback
 
+
 def block_until_start(quick):
     block_until_start_by_second(quick, 2)
 
@@ -26,6 +27,21 @@ def block_precise_until_start(quick):
         if diff < 300:
             break
             print(diff)
+
+
+def block_until_start_with_time(quick, hour=None, minute=None):
+    ct = datetime.datetime.now()
+    if hour is None:
+        hour = ct.hour
+    if minute is None:
+        minute = ct.minute
+    st = datetime.datetime(ct.year, ct.month, ct.day, hour, minute)
+    if quick:
+        st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, ct.second + 3)
+    gap = math.floor((st - ct).total_seconds()) - 2
+    print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
+    if gap > 0:
+        time.sleep(gap)
 
 
 def block_until_start_by_second(quick, sec_ahead):
