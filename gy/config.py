@@ -62,5 +62,5 @@ class GyConfig:
                 self.user_info = json.load(fp)
         except:
             print('Unable to load user info, we use default info')
-            return {'username':'13119182428', 'password': 'lcl12345'}
+            return {'username':'13632265913', 'password': 'lcl1229'}
         return self.user_info

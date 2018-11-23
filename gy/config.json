@@ -4,5 +4,6 @@
   "chrome_user_dir" : "/home/ap/fan/chrome/",
   "chrome_user_dir_chadang": "/home/ap/fan/chrome/chadang",
   "chrome_user_dir_boc": "/home/ap/fan/chrome/boc",
+  "chrome_user_dir_mf178": "/home/ap/fan/chrome/178",
   "is_headless" : true
 }

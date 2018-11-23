@@ -44,6 +44,7 @@ def get_job(driver, charge_type):
         return get_order(driver, {'faceValue': charge_type, 'operator': operator['operator']})
     return {'code': -2}
 
+
 def login(driver):
     print('Login@',driver.current_url)
     driver.find_element_by_id('account').send_keys('13632265913')
@@ -51,6 +52,7 @@ def login(driver):
     driver.execute_script('$("#loginButton").trigger("touchstart")')
     time.sleep(5)
     print('After login page@', driver.current_url)
+
 
 chrome_options = Options()
 conf = config.GyConfig()
@@ -78,7 +80,7 @@ try:
     cnt = 0
     sec = 3
     while True:
-        result = get_job(driver, 100)
+        result = get_job(driver, 30)
         if result['code'] == 0:
             break
         cnt += 1

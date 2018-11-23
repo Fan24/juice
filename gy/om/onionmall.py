@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from gy import config
 from gy.util import common
 import time, json
@@ -48,7 +46,7 @@ def get_address_id(driver):
     return None
 
 
-def get_cart_list(driver):
+def get_cart_list(driver, need_tick):
     driver.get(param['cart_list_url'] % (time.time()*1000))
     print(driver.current_url)
     key_map = {'freshList': 'freshList', 'aniList': 'onionList', 'drinksList' : 'wineFirstList', 'seasList' : 'onionList'}
@@ -57,7 +55,7 @@ def get_cart_list(driver):
     foreign_list = data['foreignList']
     if 0 < len(foreign_list):
         for good in foreign_list:
-            if good['goods'][0]['isTick'] != 1:
+            if need_tick and good['goods'][0]['isTick'] != 1:
                 continue
             cart_ids['foreignList'].append({"id": str(good['goods'][0]['product']['id']), "count" : str(int(good['goods'][0]['num']))})
     for (key,val) in key_map.items():
@@ -140,13 +138,13 @@ def wait_order_result(driver, id_key):
     return False
 
 
-def order_from_cart(driver, hour=None, minute=None):
+def order_from_cart(driver, hour=None, minute=None, need_tick=True):
     addr_id = get_address_id(driver)
     if not addr_id:
         print('address id empty,exit')
         return False
 
-    cart_ids = get_cart_list(driver)
+    cart_ids = get_cart_list(driver, need_tick)
     cart_ids_str = to_cart_ids_str(cart_ids)
     coupon_no = get_coupon_no(driver, cart_ids_str)
     print('Coupon no:', coupon_no)
@@ -192,15 +190,18 @@ try:
     prepare_env(driver, user_info)
     hour = None
     minute = None
+    tick = False
     if len(sys.argv) > 3:
         hour = int(sys.argv[2])
         minute = int(sys.argv[3])
         print('Start time %02d:%02d' % (hour, minute))
-    order_from_cart(driver, hour, minute)
+    if len(sys.argv) > 4:
+        if sys.argv[4] == "tick":
+            tick = True
+    order_from_cart(driver, hour, minute, tick)
 except:
     traceback.print_exc()
 finally:
-    input('please input something to end!')
     driver.quit()
     print('END.OF.PROG')
 
