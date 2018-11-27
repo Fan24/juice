@@ -115,19 +115,45 @@ def get_order(driver, amout, num):
         });
         return js_result;
     '''
+    js_report = r'''
+        var report_url = "http://www.mf178.cn/customer/order/ajax";
+        var js_rsl;
+        $.ajax({
+            "type"; "get",
+            "async" : false,
+            "url" : report_url,
+            "data":{
+                    "action" : "task_report",
+                    "op" : "succ",
+                    "id" : "arguments[0]"
+                },
+            success : function(result){
+                js_rsl = result; 
+            }
+        });
+        return js_rsl;
+        
+    '''
     cnt = 0
     while True:
         cnt += 1
         print('#%d attempting to get phone number' % cnt)
-        input('input anything before u prepare')
         result = driver.execute_script(js)
         if result['code'] == 0:
             print(result['SEQ'])
             sb_result = driver.execute_script(js_submit, amout, num, result['SEQ'])
+            print(sb_result)
             if sb_result['code'] == '0':
                 print('%s--charge phone%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), sb_result['phone']))
-                input('n for report and get next order')
-
+                command = input('n for report and get next order, q for report and exit')
+                rp_rslt = driver.execute_script(js_report, sb_result['order_id'])
+                if rp_rslt.get('type') != 'refresh':
+                    print('report error', rp_rslt)
+                    input('please interupt from manual, input any to continue')
+                if command == "n":
+                    continue
+                else:
+                    break
         else:
             print('Unable to get SEQ,' + result)
         time.sleep(5)
@@ -146,10 +172,10 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    get_order(driver, 100, 1)
+    get_order(driver, 30, 1)
 except:
     traceback.print_exc()
 finally:
-    input('input anything to end')
+    #input('input anything to end')
     driver.quit()
     print('END.OF.PROG')

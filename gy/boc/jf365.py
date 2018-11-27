@@ -69,7 +69,7 @@ def do_order(driver, url_list):
     console.info(arguments[0]);
     xmlhttp.send();'''
 
-    common.block_until_start_by_second(False, 1)
+    common.block_until_start_by_second(True, 1)
     st = datetime.datetime.now()
     for url in url_list:
         print(url)
@@ -118,7 +118,7 @@ else:
 driver.set_window_size(640, 700)
 try:
     prepare_cnt = 1
-    while not prepare_env(driver, '00003jABr6rAG6nOCi16ev4XZpJ:1bno0e2ph', '071J0Kaq1N8xjp0zy4aq1L4Oaq1J0Ka2'):
+    while not prepare_env(driver, '0000vXowIJ3FI-42D9G0eHR5yRl:19fhdbabq', '001obkak0zvoim1abjdk0Tebak0obkaP'):
         print('Retry:',prepare_cnt)
         prepare_cnt += 1
         if prepare_cnt > 5:
@@ -132,8 +132,13 @@ try:
 
     url_list = []
     for cid in coupon_id:
-        url_list.append(assemble_order_url(driver, cid))
-
+        for an in range(1,5):
+            try:
+                url_list.append(assemble_order_url(driver, cid))
+                break
+            except:
+                print('assemble_order_url,error #', an)
+                traceback.print_exc()
     do_order(driver, url_list)
 except:
     traceback.print_exc()
