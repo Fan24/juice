@@ -69,7 +69,7 @@ def do_order(driver, url_list):
     console.info(arguments[0]);
     xmlhttp.send();'''
 
-    common.block_until_start_by_second(True, 1)
+    common.block_until_start_by_second(False, 1)
     st = datetime.datetime.now()
     for url in url_list:
         print(url)
