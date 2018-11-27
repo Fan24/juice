@@ -59,6 +59,81 @@ def prepare_env(driver, conf):
     return True
 
 
+def get_qpay_order(driver, id):
+    driver.get('http://www.mf178.cn/customer/qpay/mytasks')
+    js = r'''
+        var js_result = {}, target_url = "http://www.mf178.cn/customer/qpay/ajax?action=get_tasks&id=" + arguments[0];
+        $.ajax({
+            "type": "get",
+            "async" : false,
+            "url": target_url,
+            success: function (result1) {
+                result = $.parseJSON(result1); 
+                if(result.type=="dialog"){
+                    js_result["SEQ"] = $(result.data).find("input[name='SEQ']").val();
+                    js_result["code"] = 0
+                }else{
+                    console.info(result1);
+                    js_result["code"] = 1;
+                    js_result["message"] = result;
+                }
+            }
+        }); 
+        return js_result;
+    '''
+    js_get = r'''
+        var js_result = {}, target_url = "http://www.mf178.cn/customer/qpay/get_tasks";
+        $.ajax({
+            "type": "post",
+            "async" : false,
+            "url": target_url,
+            "data":{
+                "id":arguments[0],
+                "count" : 1,
+                "role": 1,
+                "SEQ" : arguments[1]
+            },
+            success: function (result) {
+                var $order = $(result).find('table:last').find('td:first');
+                if($.isEmptyObject($order) || $order.length == 0){
+                    js_result['code'] = -1;
+                }else{
+                    js_result['code'] = 0;
+                    js_result['order_id'] = $order.text();
+                }
+            }
+        }); 
+        return js_result;
+    '''
+    cnt = 1
+    while True:
+        result = driver.execute_script(js, id)
+        print(result)
+        if result.get('code') is None:
+            input('check code')
+        if result.get('code') == 0:
+            order_result = driver.execute_script(js_get, id, result['SEQ'])
+            if order_result.get('code') == 0:
+                print('Order find--', order_result)
+                if input('n for continue, q for exit') == "n":
+                    cnt = 1
+                    continue
+                else:
+                    return
+        time.sleep(5)
+        print('#%d retry' % cnt)
+        cnt += 1
+
+
+def report(driver, order_id):
+    url = "http://www.mf178.cn/customer/order/ajax?action=task_report&op=succ&id=%s" % order_id
+    now_url = driver.current_url
+    driver.get(url)
+    result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    driver.get(now_url)
+    return result
+
+
 def get_order(driver, amout, num):
     js = r'''
         var target_url = "http://www.mf178.cn/customer/order/ajax?_" + new Date().getTime();
@@ -96,7 +171,7 @@ def get_order(driver, amout, num):
             "contract": [1, 2, 4, 8, 16, 32, 64, 128, 256], 
             "SEQ" : arguments[2]
         };
-        var js_result;
+        var js_result = {};
         $.ajax({
             "type": "post",
             "async" : false,
@@ -104,6 +179,7 @@ def get_order(driver, amout, num):
             "url" : target_url,
             success : function(result){
                 var rsl_doc = $(result);
+                console.info(result);
                 var elem_phone = rsl_doc.find(".btn-xs");
                 if($.isEmptyObject(elem_phone)){
                     js_result = {'code':'-1', 'phone':'NA'};
@@ -115,41 +191,24 @@ def get_order(driver, amout, num):
         });
         return js_result;
     '''
-    js_report = r'''
-        var report_url = "http://www.mf178.cn/customer/order/ajax";
-        var js_rsl;
-        $.ajax({
-            "type"; "get",
-            "async" : false,
-            "url" : report_url,
-            "data":{
-                    "action" : "task_report",
-                    "op" : "succ",
-                    "id" : "arguments[0]"
-                },
-            success : function(result){
-                js_rsl = result; 
-            }
-        });
-        return js_rsl;
-        
-    '''
     cnt = 0
     while True:
         cnt += 1
         print('#%d attempting to get phone number' % cnt)
         result = driver.execute_script(js)
-        if result['code'] == 0:
-            print(result['SEQ'])
+        if result.get('code') == 0:
             sb_result = driver.execute_script(js_submit, amout, num, result['SEQ'])
-            print(sb_result)
-            if sb_result['code'] == '0':
+            if sb_result('code') == '0' and sb_result.get('phone') is not None:
                 print('%s--charge phone%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), sb_result['phone']))
                 command = input('n for report and get next order, q for report and exit')
-                rp_rslt = driver.execute_script(js_report, sb_result['order_id'])
-                if rp_rslt.get('type') != 'refresh':
-                    print('report error', rp_rslt)
-                    input('please interupt from manual, input any to continue')
+                try:
+                    report_result = report(driver, sb_result['order_id'])
+                    if report_result.get('type') != 'refresh':
+                        print('report error', report_result)
+                        input('please interupt from manual, input any to continue')
+                except:
+                    print(report_result)
+                    traceback.print_exc()
                 if command == "n":
                     continue
                 else:
@@ -172,7 +231,8 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    get_order(driver, 30, 1)
+    #get_order(driver, 300, 1)
+    get_qpay_order(driver, 21)
 except:
     traceback.print_exc()
 finally:
