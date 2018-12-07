@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
+from PIL import Image,ImageEnhance
 from gy import config
 import time, json
 import traceback
@@ -80,6 +82,25 @@ def login(driver, userInfo):
         time.sleep(2)
         driver.find_element_by_id('loginBtn').click()
         time.sleep(5)
+    try:
+        captcha = driver.find_element_by_id('captcha')
+        cap_file = '%scaptcha.png' % conf.get_screen_path()
+        driver.get_screenshot_as_file(cap_file)
+        print(cap_file)
+        code = driver.find_element_by_id('captcha')
+        left = int(code.location['x'])
+        top = int(code.location['y'])
+        right = int(code.location['x'] + code.size['width'])
+        bottom = int(code.location['y'] + code.size['height'])
+        img = Image.open(cap_file)
+        img = img.crop((left, top, right, bottom))
+        img.save('%scaptcha2.png' % (conf.get_screen_path()))
+        x = input('please input verify code x')
+        y = input('please input verify code y')
+        ActionChains(driver).move_to_element_with_offset(captcha, x, y).click().perform()
+        time.sleep(5)
+    except:
+        print('not verify code')
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
         print('RiskUri:',driver.current_url)
         driver.find_element_by_class_name('.mode-btn.voice-mode').click()
@@ -115,7 +136,7 @@ if conf.get_chrome_executable_path():
 else:
     driver = webdriver.Chrome(options=chrome_options)
 
-driver.set_window_size(640, 700)
+driver.set_window_size(375, 812)
 try:
     print('UserName:',userInfo['username'])
     cnt = 1
