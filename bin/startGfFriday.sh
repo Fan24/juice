@@ -12,6 +12,7 @@ fi
 export PYTHONPATH=$PON_PATH
 export PROJ_PATH=$baseDir
 export CONF_FILE=$config_file
+export VERIFY_CODE="$baseDirinput/vc.dat"
 
 cd $baseDir
 srcDir="/home/ap/fan/OnionMall/gy/jd/"
