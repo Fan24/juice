@@ -28,7 +28,7 @@ def visitActivity(driver, userInfo):
 
 
 def get_verfiy_code():
-    if "VERIFY_CODE" not in os.environ.get('VERIFY_CODE'):
+    if "VERIFY_CODE" not in os.environ:
         x = input('please input verify code x')
         y = input('please input verify code y')
         return {'x' : x, 'y' : y}
