@@ -33,8 +33,13 @@ def get_verfiy_code():
         y = input('please input verify code y')
         return {'x' : x, 'y' : y}
     print('Verfy_code is from file', os.environ.get('VERIFY_CODE'))
+    curr_time = time.time()
     while True:
         try:
+            if os.path.getmtime(os.environ.get('VERIFY_CODE')) < curr_time:
+                print('please input verify code from', os.environ.get('VERIFY_CODE'))
+                time.sleep(5)
+                continue
             with open(os.environ.get('VERIFY_CODE')) as fp:
                 code = json.load(fp)
                 if code.get('x') is not None and code.get('y') is not None:
