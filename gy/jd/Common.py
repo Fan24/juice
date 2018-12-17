@@ -2,6 +2,32 @@
 import json,sys,os,time
 import datetime
 import math
+import Image
+from selenium.webdriver import ActionChains
+
+
+def get_verfiy_code():
+    if "VERIFY_CODE" not in os.environ:
+        x = input('please input verify code x')
+        y = input('please input verify code y')
+        return {'x' : x, 'y' : y}
+    print('Verfy_code is from file', os.environ.get('VERIFY_CODE'))
+    curr_time = time.time()
+    while True:
+        try:
+            if os.path.getmtime(os.environ.get('VERIFY_CODE')) < curr_time:
+                print('please input verify code from', os.environ.get('VERIFY_CODE'))
+                time.sleep(5)
+                continue
+            with open(os.environ.get('VERIFY_CODE')) as fp:
+                code = json.load(fp)
+                if code.get('x') is not None and code.get('y') is not None:
+                    return code
+            print('please input verify code')
+            time.sleep(5)
+        except:
+            print('please input verify code')
+            time.sleep(5)
 
 
 def jd_login(driver, userInfo, conf):
@@ -22,6 +48,24 @@ def jd_login(driver, userInfo, conf):
         time.sleep(2)
         driver.find_element_by_id('loginBtn').click()
         time.sleep(5)
+    try:
+        captcha = driver.find_element_by_id('captcha')
+        cap_file = '%scaptcha.png' % conf.get_screen_path()
+        driver.get_screenshot_as_file(cap_file)
+        print(cap_file)
+        code = driver.find_element_by_id('captcha')
+        left = int(code.location['x'])
+        top = int(code.location['y'])
+        right = int(code.location['x'] + code.size['width'])
+        bottom = int(code.location['y'] + code.size['height'])
+        img = Image.open(cap_file)
+        img = img.crop((left, top, right, bottom))
+        img.save('%scaptcha2.png' % (conf.get_screen_path()))
+        code = get_verfiy_code()
+        ActionChains(driver).move_to_element_with_offset(captcha, code.get('x'), code.get('y')).click().perform()
+        time.sleep(5)
+    except:
+        print('not verify code')
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
         print('RiskUri:',driver.current_url)
         driver.find_element_by_class_name('.mode-btn.voice-mode').click()
