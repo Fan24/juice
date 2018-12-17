@@ -59,7 +59,6 @@ def asyn_grap_prize(driver, st_hour):
     console.debug(arguments[0]);
     '''
     ent_key = get_ent_key(st_hour)
-    input('input when ready')
     Common.block_until_start(False)
     st = datetime.datetime.now()
     for x in range(1, 5):
@@ -96,7 +95,7 @@ driver.set_window_size(640, 700)
 try:
     print('UserName:', userInfo['username'])
     cnt = 1
-    for cnt in range(1, 4):
+    for cnt in range(1, 5):
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
@@ -106,6 +105,5 @@ try:
 except:
     traceback.print_exc()
 finally:
-    input('input to finish')
     driver.quit()
     print('END.OF.LINE')
