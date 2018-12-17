@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>JavaScript获取鼠标移动时的坐标(兼容:IE8、谷歌、Firefox、Opera)_脚本之家</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style type="text/css">
+.tip {
+width:200px;
+border:2px solid #ddd;
+padding:8px;
+background:#f1f1f1;
+color:#666;
+}
+#img{
+    margin-left:0px;
+    margin-top:0px;
+
+}
+</style>
+    <script type="text/javascript">
+
+//方法1
+function mousePos(e){
+  var x,y;
+  var e = e||window.event;
+  return {
+    x:e.clientX+document.body.scrollLeft + document.documentElement.scrollLeft,
+    y:e.clientY+document.body.scrollTop + document.documentElement.scrollTop
+  };
+};
+
+//方法2
+//Firefox支持属性pageX,与pageY属性，这两个属性已经把页面滚动计算在内了,
+//在Chrome可以通过document.body.scrollLeft，document.body.scrollTop计算出页面滚动位移，
+//而在IE下可以通过document.documentElement.scrollLeft ，document.documentElement.scrollTop
+function getMousePos(event) {
+      var e = event || window.event;
+      var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+      var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+      var x = e.pageX || e.clientX + scrollX;
+      var y = e.pageY || e.clientY + scrollY;
+      //alert('x: ' + x + '\ny: ' + y);
+      return { 'x': x - 8, 'y': y - 8};
+    }
+
+function test(e){
+document.getElementById("mjs").innerHTML = getMousePos(e).x+','+getMousePos(e).y;
+};
+</script>
+</head>
+<body>
+<img src="../../screen/captcha.png" alt="" onmousemove="test(event)" id="img"/>
+<div id="mjs" class="tip">获取鼠标点击位置坐标</div>
+</body>
+</html>
