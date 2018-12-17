@@ -14,7 +14,6 @@ export PROJ_PATH=$baseDir
 export CONF_FILE=$config_file
 export VERIFY_CODE=$baseDir"input/fan.dat"
 
-echo $VERIFY_CODE
 cd $baseDir
 srcDir="/home/ap/fan/OnionMall/gy/jd/"
 pythonSrc="dec18.py"

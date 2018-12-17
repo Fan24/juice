@@ -59,7 +59,7 @@ def asyn_grap_prize(driver, st_hour):
     console.debug(arguments[0]);
     '''
     ent_key = get_ent_key(st_hour)
-    Common.block_until_start(False)
+    Common.block_until_start(True)
     st = datetime.datetime.now()
     for x in range(1, 5):
         for key in ent_key:
@@ -100,6 +100,7 @@ try:
         if not visit_activity(driver, userInfo):
             continue
         st_hour = datetime.datetime.now().hour + 1
+        st_hour = 20
         asyn_grap_prize(driver, st_hour)
         break
 except:
