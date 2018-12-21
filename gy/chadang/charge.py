@@ -34,7 +34,12 @@ def get_order(driver, param):
 def get_job(driver, charge_type):
     pool_url = 'http://chadan.wang/order/pooldd623299?JSESSIONID=%s' % driver.get_cookie('logged')['value']
     driver.get(pool_url)
-    pool = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    try:
+        pool = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except:
+        print('cloud not get pool', driver.page_source)
+        traceback.print_exc()
+        return {'code': -3}
     if pool['errorCode'] != 200:
         return {'code':-1}
 

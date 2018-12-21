@@ -16,7 +16,10 @@ param_url = {
 def login(driver, conf):
     print('Prepare to login@', driver.current_url)
     user_info = conf.get_user_info()
-    driver.find_elements_by_class_name('ajaxlink')[1].click()
+    js = '''
+        document.getElementsByClassName('ajaxlink')[0].click();
+    '''
+    driver.execute_script(js)
     time.sleep(3)
     name_elem = driver.find_element_by_id('username')
     name_elem.clear()
@@ -198,8 +201,8 @@ def get_order(driver, amout, num):
         result = driver.execute_script(js)
         if result.get('code') == 0:
             sb_result = driver.execute_script(js_submit, amout, num, result['SEQ'])
-            if sb_result('code') == '0' and sb_result.get('phone') is not None:
-                print('%s--charge phone%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), sb_result['phone']))
+            if sb_result.get('code') == '0' and sb_result.get('phone') is not None:
+                print('%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), sb_result['phone']))
                 command = input('n for report and get next order, q for report and exit')
                 try:
                     report_result = report(driver, sb_result['order_id'])
@@ -231,8 +234,8 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    #get_order(driver, 300, 1)
-    get_qpay_order(driver, 21)
+    get_order(driver, 100, 1)
+    #get_qpay_order(driver, 12)
 except:
     traceback.print_exc()
 finally:

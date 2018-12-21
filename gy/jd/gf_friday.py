@@ -61,7 +61,7 @@ def blockUntilStart():
 
 
 def parse_entrance_id(driver):
-    return "9CpUGDst5mlvlLHm"
+    return "Hv4flQvbzDeUSC0"
 
 def get_prize_url(entrance_id):
     return param['prizeUrl'] % (entrance_id, time.time() * 1000)
