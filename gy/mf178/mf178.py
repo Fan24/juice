@@ -29,6 +29,7 @@ def login(driver, conf):
     pw_elem.send_keys(user_info['password'])
     captch_dir = '%smf.png' % conf.get_screen_path()
     driver.get_screenshot_as_file(captch_dir)
+    print('http://%s/mf178/login_vcode.html' % common.get_host_ip())
     vcode = input('Please input vcode from %s' % captch_dir)
     vcode_elem = driver.find_element_by_id('vcode')
     vcode_elem.clear()
@@ -234,7 +235,7 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    get_order(driver, 100, 1)
+    get_order(driver, 50, 1)
     #get_qpay_order(driver, 12)
 except:
     traceback.print_exc()

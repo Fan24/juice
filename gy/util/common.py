@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from gy import config
 import traceback
+import socket
 
 
 def block_until_start(quick):
@@ -82,3 +83,14 @@ def build_chrome(gy_config, chrome_user_dir_key=None):
 
     driver.set_window_size(640, 700)
     return driver
+
+
+def get_host_ip():
+    try:
+        ip = ''
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
