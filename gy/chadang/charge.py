@@ -2,9 +2,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from gy import config
-import time, json
+import time
+import json
+import datetime
 import traceback
-import math
 
 
 def go_dashboard(driver):
@@ -31,7 +32,14 @@ def get_order(driver, param):
     return {'code':code, 'chargePhone': phone}
 
 
-def get_job(driver, charge_type):
+def get_job(driver, charge_type, oper_type):
+    """
+        get order form chadang
+    :param driver:
+    :param charge_type: money to charge
+    :param oper_type: MOBILE,UNICOM,TELECOM,None. Choose one from four, None for not specified.
+    :return:
+    """
     pool_url = 'http://chadan.wang/order/pooldd623299?JSESSIONID=%s' % driver.get_cookie('logged')['value']
     driver.get(pool_url)
     try:
@@ -42,9 +50,10 @@ def get_job(driver, charge_type):
         return {'code': -3}
     if pool['errorCode'] != 200:
         return {'code':-1}
-
     for operator in pool['data']:
         if operator['faceValue%d' % charge_type] == 0:
+            continue
+        if oper_type is not None and oper_type != operator['operator']:
             continue
         return get_order(driver, {'faceValue': charge_type, 'operator': operator['operator']})
     return {'code': -2}
@@ -57,6 +66,27 @@ def login(driver):
     driver.execute_script('$("#loginButton").trigger("touchstart")')
     time.sleep(5)
     print('After login page@', driver.current_url)
+
+
+def confirm_order(driver, charge_phone):
+    confirm_url = 'http://chadan.wang/wang/makeMoney'
+    driver.get(confirm_url)
+    time.sleep(3)
+    driver.get(driver.find_element_by_class_name('success').get_attribute('href'))
+    time.sleep(3)
+    driver.find_element_by_id('sureReport').click()
+    time.sleep(3)
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    check_url = 'http://chadan.wang/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3&JSESSIONID=%s' % (today, today, driver.get_cookie('logged')['value'])
+    driver.get(check_url)
+    qry_result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    if qry_result['errorCode'] == 200 and qry_result['data']['total'] == 0:
+        print('charge phone[%s] report success' % charge_phone)
+        return True
+    print('Report phone[%s] to sucess fail, please check' % charge_phone)
+    print(qry_result)
+
+    return False
 
 
 chrome_options = Options()
@@ -84,14 +114,21 @@ try:
     go_dashboard(driver)
     cnt = 0
     sec = 3
+    charge_money = 100
+    ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
+    operator_type = ot_array[0]
     while True:
-        result = get_job(driver, 30)
+        result = get_job(driver, charge_money, operator_type)
         if result['code'] == 0:
-            break
+            print('%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), result['chargePhone']))
+            cmd = input('input n to get next charge phone with %d, q to exit\n'% charge_money)
+            if confirm_order(driver, result['chargePhone']) and cmd == "n":
+                continue
+            else:
+                break
         cnt += 1
         print('#%d.sleep %s sec' % (cnt, sec))
         time.sleep(sec)
-    print('Success to get order, chargePhone:',result['chargePhone'])
 except:
     traceback.print_exc()
 finally:
