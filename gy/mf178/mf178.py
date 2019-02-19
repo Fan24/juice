@@ -172,7 +172,7 @@ def get_order(driver, amout, num):
             "prov_name" : "",
             "count" : arguments[1],
             "role" : "1",
-            "contract": [1, 2, 4, 8, 16, 32, 64, 128, 256], 
+            "contract": [1, 2, 4, 8, 16, 32, 64, 128, 256,512], 
             "SEQ" : arguments[2]
         };
         var js_result = {};
@@ -235,7 +235,7 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    get_order(driver, 50, 1)
+    get_order(driver, 100, 1)
     #get_qpay_order(driver, 12)
 except:
     traceback.print_exc()
