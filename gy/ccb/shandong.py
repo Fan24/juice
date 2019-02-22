@@ -56,8 +56,12 @@ def do_order(driver):
     print('prepare to make order')
     succ = False
     for cnt in range(1, 10):
-        if driver.execute_script(js_addcart):
-            succ = True
+        succ = driver.execute_script(js_addcart)
+        desc = "FAIL"
+        if succ:
+            desc = "SUCCESS"
+        print('#%s to add cart result:%s', (cnt, desc))
+        if succ:
             break
     if succ is True:
         driver.get('https://mall.wktop.cn/flow/team/46')
