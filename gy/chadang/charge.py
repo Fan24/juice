@@ -8,11 +8,11 @@ import datetime
 import traceback
 
 
-def go_dashboard(driver):
+def go_dashboard(driver, user_info):
     driver.get('http://chadan.wang/wang/makeMoney')
     time.sleep(3)
     if driver.current_url.startswith('http://chadan.wang/wang/login'):
-        login(driver)
+        login(driver, user_info)
 
 
 def get_order(driver, param):
@@ -59,10 +59,10 @@ def get_job(driver, charge_type, oper_type):
     return {'code': -2}
 
 
-def login(driver):
+def login(driver, user_info):
     print('Login@',driver.current_url)
-    driver.find_element_by_id('account').send_keys('13632265913')
-    driver.find_element_by_id('password').send_keys('lcl12345')
+    driver.find_element_by_id('account').send_keys(user_info['username'])
+    driver.find_element_by_id('password').send_keys(user_info['password'])
     driver.execute_script('$("#loginButton").trigger("touchstart")')
     time.sleep(5)
     print('After login page@', driver.current_url)
@@ -111,10 +111,10 @@ else:
 
 driver.set_window_size(640, 700)
 try:
-    go_dashboard(driver)
+    go_dashboard(driver, conf.get_user_info())
     cnt = 0
     sec = 3
-    charge_money = 100
+    charge_money = 50
     ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
     operator_type = ot_array[0]
     while True:

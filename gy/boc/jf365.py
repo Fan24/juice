@@ -118,7 +118,7 @@ else:
 driver.set_window_size(640, 700)
 try:
     prepare_cnt = 1
-    while not prepare_env(driver, '0000vXowIJ3FI-42D9G0eHR5yRl:19fhdbabq', '001obkak0zvoim1abjdk0Tebak0obkaP'):
+    while not prepare_env(driver, '0000-npSwMlv4LjqjC5xmcKp5To:19fhdb84', '81eKNxj2m0sCC0sQSxj29fExj2eKNxu'):
         print('Retry:',prepare_cnt)
         prepare_cnt += 1
         if prepare_cnt > 5:
@@ -128,8 +128,11 @@ try:
 
     coupon_id = []
     for one in load_coupon_id(-1):
+        if one.get('target') is not None:
+            continue
         coupon_id.append(one['id'])
 
+    print(coupon_id)
     url_list = []
     for cid in coupon_id:
         for an in range(1,5):

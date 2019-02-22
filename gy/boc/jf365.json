@@ -1,7 +1,10 @@
 {
-  "2":[{"id" : "WZLXF000204", "desc" : "百果元"}, {"id" : "WZLXF000200", "desc" : "M记"}, {"id" : "WHXFY000090", "desc" : "中通"}, {"id" : "WZLXF000195", "desc" : "万宁"},
-            {"id" : "WEBUY990158", "desc" : "哈根达斯"}, {"id" : "WEBUY990157", "desc" : "COCO代金"}],
-  "3":[{"id" : "WHXFY000078", "desc" : "KFC"}, {"id" : "WZLXF000162", "desc" : "必胜客"}, {"id" : "WEBUY990146", "desc" : "呷哺呷哺"}],
-  "4":[{"id" : "WJHMA000287", "desc" : "万宁"}, {"id" : "WZLXF000174", "desc" : "西贝莜面"}],
-  "5":[{"id" : "WHXFY000077", "desc" : "严选"}, {"id" : "WHXFY000075", "desc" : "家乐福"}]
+  "2":[{"id" : "WEBUY990212", "desc" : "腾讯视频VIP季卡"}, {"id" : "WSHHY108601", "desc" : "爱奇艺季卡"}],
+  "3":[{"id" : "WJHMA000297", "desc" : "西堤牛排", "target" : false}, {"id" : "WJHMA000296", "desc" : "鹿港小镇", "target" : false}, {"id" : "WZLXF000266", "desc" : "原麦山", "target" : false},
+       {"id" : "WZLXF000263", "desc" : "海底捞"}, {"id" : "WZLXF000261", "desc" : "DQ30", "target" : false},
+    {"id" : "WZLXF000259", "desc" : "棒约翰"}, {"id" : "WJHMA000295", "desc" : "好利来"}, {"id" : "WBQJR003208", "desc" : "汉拿山"},
+    {"id" : "WYIMA000098", "desc" : "味多美", "target" : false}, {"id" : "WEBUY990210", "desc" : "呷哺呷哺"}, {"id" : "WEBUY990209", "desc" : "汉堡王"}
+    ],
+  "5":[{"id" : "WHXFY000122", "desc" : "全家30元电子券"}, {"id" : "WHXFY000116", "desc" : "网易严选100元"},
+    {"id" : "WZLXF000262", "desc" : "百果园30元", "target" : false}, {"id" : "WZLXF000260", "desc" : "永辉超市100元"}]
 }
