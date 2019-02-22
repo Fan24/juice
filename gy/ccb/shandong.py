@@ -60,7 +60,7 @@ def do_order(driver):
         desc = "FAIL"
         if succ:
             desc = "SUCCESS"
-        print('#%s to add cart result:%s', (cnt, desc))
+        print('#%s to add cart result:%s' % (cnt, desc))
         if succ:
             break
     if succ is True:
