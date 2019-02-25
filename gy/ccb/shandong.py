@@ -52,9 +52,9 @@ def do_order(driver):
         }
     '''
     js_confrim = '''
-        $("#p").val('1');
-        $("#mobile").val("13632265913");
-        $("#orderForm").submit();
+        document.getElementById('p').value='1';
+        document.getElementById('mobile').value='13632265913';
+        document.getElementById('orderForm').submit();
     '''
     common.block_precise_until_start(False)
     print('prepare to make order')
