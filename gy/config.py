@@ -22,7 +22,9 @@ class GyConfig:
         return self.config.get('os_type')
 
     def get_http_proxy(self):
-        return self.config.get('http_proxy')
+        if self.config.get('through_proxy') and self.config.get('http_proxy') is not None:
+            return self.config.get('http_proxy')
+        return False
 
     def get_chrome_user_dir(self):
         return self.get_chrome_user_dir_by_user_info(self.user_info)

@@ -4,6 +4,8 @@ from selenium.webdriver.chrome.options import Options
 from gy import config
 from gy.util import common
 import time
+import datetime
+import math
 import traceback
 
 
@@ -28,10 +30,10 @@ def prepare_env(driver, conf):
 
 def do_order(driver):
     js_addcart = '''
-    var succ = false;
-    $.ajax({
+        var add_cart = function(tagID){
+            $.ajax({
             "type": "post",
-            "async" : false,
+            "async" : "true",
             "url":  '/flow/add_cart',
             "dataType" : "json", 
             data:{
@@ -40,33 +42,39 @@ def do_order(driver):
                 "num": 1
             },
             success: function (data) {
-                if(data.error=='success'){
-                    succ = true; 
-                }
+                console.info(JSON.stringify(data));
+                if(data.error=='success') window.location.href='/flow/team/46';
             }
-        }); 
-    return succ;
+        });
+        }
+        for(var i = 0; i < arguments[0]; i++){
+            add_cart(i); 
+        }
     '''
     js_confrim = '''
         $("#p").val('1');
         $("#mobile").val("13632265913");
-        $("#orderForm").submitForm();
+        $("#orderForm").submit();
     '''
     common.block_precise_until_start(False)
     print('prepare to make order')
-    succ = False
-    for cnt in range(1, 10):
-        succ = driver.execute_script(js_addcart)
-        desc = "FAIL"
-        if succ:
-            desc = "SUCCESS"
-        print('#%s to add cart result:%s' % (cnt, desc))
-        if succ:
-            break
-    if succ is True:
-        driver.get('https://mall.wktop.cn/flow/team/46')
-        driver.execute_script(js_confrim)
-        print('After confirm, we at ', driver.current_url)
+
+    max_try = 8
+    print("try to add cart with max:", max_try)
+    driver.execute_script(js_addcart, max_try)
+    print('start to check whether  succeed to add cart or not')
+    max_try = 20000
+    st = datetime.datetime.now()
+    for test in range(1, max_try):
+        if driver.current_url.endswith('46'):
+            print('success to add cart, next for preparing confirm environment, execute confirm')
+            driver.execute_script(js_confrim)
+            print('After confirm, we at ', driver.current_url)
+            return
+    end = datetime.datetime.now()
+    gap = math.floor((end - st).total_seconds()) - 2
+    print('We use %d(s) to check if we success!' % gap)
+    print('We have checked %d time(s), unable to add_cart' % max_try)
 
 
 chrome_options = Options()

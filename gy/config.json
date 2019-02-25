@@ -6,5 +6,6 @@
   "chrome_user_dir_ccb_sd": "/home/ap/fan/chrome/ccb_sd",
   "chrome_user_dir_boc": "/home/ap/fan/chrome/boc",
   "chrome_user_dir_mf178": "/home/ap/fan/chrome/178",
-  "is_headless" : true
+  "is_headless" : true,
+  "through_proxy" : false
 }
