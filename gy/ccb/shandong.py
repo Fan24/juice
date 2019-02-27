@@ -30,7 +30,6 @@ def prepare_env(driver, conf):
 
 def do_order(driver):
     js_addcart = '''
-        var success = 0;
         var add_cart = function(tagID){
             $.ajax({
             "type": "post",
@@ -43,9 +42,8 @@ def do_order(driver):
                 "num": 1
             },
             success: function (data) {
-                console.info(JSON.stringify(data) + "----success:" + success);
-                if(data.error=='success' && 0 == success) {
-                    success = 1;
+                console.info("TagID:" + tagID + "-----" + JSON.stringify(data));
+                if(data.code == 'success' || data.error == 'success') {
                     window.location.href='/flow/team/46';
                 }
             }
@@ -86,7 +84,7 @@ def do_order(driver):
         confirm(document.getElementsByName('token')[0].value, 0, "AA");
         confirm(document.getElementsByName('token')[0].value, 0, "BB");
     '''
-    common.block_precise_until_start(False)
+    common.block_precise_until_start(True)
     print('prepare to make order')
 
     max_try = 6
