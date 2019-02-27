@@ -30,6 +30,7 @@ def prepare_env(driver, conf):
 
 def do_order(driver):
     js_addcart = '''
+        var success = 0;
         var add_cart = function(tagID){
             $.ajax({
             "type": "post",
@@ -42,8 +43,11 @@ def do_order(driver):
                 "num": 1
             },
             success: function (data) {
-                console.info(JSON.stringify(data));
-                if(data.error=='success') window.location.href='/flow/team/46';
+                console.info(JSON.stringify(data) + "----success:" + success);
+                if(data.error=='success' && 0 == success) {
+                    success = 1;
+                    window.location.href='/flow/team/46';
+                }
             }
         });
         }
@@ -52,24 +56,54 @@ def do_order(driver):
         }
     '''
     js_confrim = '''
-        document.getElementById('p').value='1';
-        document.getElementById('mobile').value='13632265913';
-        document.getElementById('orderForm').submit();
+        var post_data = {};
+        //post_data.token = document.getElementsByName('token')[0].value;
+        post_data.order_sn = document.getElementsByName('order_sn')[0].value;
+        post_data.extension_code = document.getElementsByName('extension_code')[0].value;
+        post_data.coupon_forced = document.getElementsByName('coupon_forced')[0].value;
+        post_data.deposit = document.getElementsByName('deposit')[0].value;
+        post_data.product_type = document.getElementsByName('product_type')[0].value;
+        post_data.p = '1';
+        post_data.pay_id = document.getElementsByName('pay_id')[0].value;
+        post_data.num = 1;
+        post_data.mobile= '13632265913';
+        var confirm = function(tokenID, count, ID){
+            if(count > 2) return false;
+            var req_data = {};
+            req_data['token'] = tokenID;
+            for(var key in post_data){
+                req_data[key] = post_data[key];
+            }
+            console.info(ID + "#" + count + "---" + JSON.stringify(req_data));
+            $.post('/flow/done', req_data, function(data){
+                console.info(ID + "#" + count + "---" + JSON.stringify(data));
+                if(data.msg=="库存不够"){
+                    return false;
+                }
+                if(null != data.data) confirm(data.data.token, count + 1, ID);
+            });
+        }
+        confirm(document.getElementsByName('token')[0].value, 0, "AA");
+        confirm(document.getElementsByName('token')[0].value, 0, "BB");
     '''
     common.block_precise_until_start(False)
     print('prepare to make order')
 
-    max_try = 8
+    max_try = 6
     print("try to add cart with max:", max_try)
     driver.execute_script(js_addcart, max_try)
-    print('start to check whether  succeed to add cart or not')
     max_try = 20000
+    print('start to check whether succeed to add cart or not with %d time(s)' % max_try)
     st = datetime.datetime.now()
     for test in range(1, max_try):
         if driver.current_url.endswith('46'):
             print('success to add cart, next for preparing confirm environment, execute confirm')
+            print(driver.page_source)
             driver.execute_script(js_confrim)
-            print('After confirm, we at ', driver.current_url)
+            time_to_rest = 30
+            print('we will sleep %d(s) before complete!' % time_to_rest)
+            time.sleep(time_to_rest)
+            print('After confirm , we are at ', driver.current_url)
             return
     end = datetime.datetime.now()
     gap = math.floor((end - st).total_seconds()) - 2
