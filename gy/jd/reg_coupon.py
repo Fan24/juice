@@ -14,7 +14,9 @@ param = {
 
 
 def visit_activity(driver, userInfo):
+    print('go to ', param['activityUrl'])
     driver.get(param['activityUrl'])
+    print('we are at', driver.current_url)
     driver.execute_script('$("#m_1_5").children().first().click()')
     time.sleep(5)
     if driver.current_url.startswith('https://plogin.m.jd.com/user/login.action'):
