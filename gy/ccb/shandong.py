@@ -84,7 +84,7 @@ def do_order(driver):
         confirm(document.getElementsByName('token')[0].value, 0, "AA");
         confirm(document.getElementsByName('token')[0].value, 0, "BB");
     '''
-    common.block_precise_until_start(True)
+    common.block_precise_until_start(False)
     print('prepare to make order')
 
     max_try = 6

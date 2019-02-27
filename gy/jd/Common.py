@@ -2,7 +2,7 @@
 import json,sys,os,time
 import datetime
 import math
-import socket
+from gy.util import common
 from PIL import Image
 from selenium.webdriver import ActionChains
 
@@ -62,6 +62,7 @@ def jd_login(driver, userInfo, conf):
         img = Image.open(cap_file)
         img = img.crop((left, top, right, bottom))
         img.save('%scaptcha2.png' % (conf.get_screen_path()))
+        print('URL to login for (x,y) coordinate\nhttp://%s/pj/gy/jd/mouse_pos.html' % common.get_host_ip())
         code = get_verfiy_code()
         ActionChains(driver).move_to_element_with_offset(captcha, code.get('x'), code.get('y')).click().perform()
         time.sleep(5)
