@@ -7,6 +7,28 @@ from PIL import Image
 from selenium.webdriver import ActionChains
 
 
+def get_sms_code():
+    if "VERIFY_CODE" not in os.environ:
+        return input('please input SMS code')
+    print('Verfy_code is from file', os.environ.get('VERIFY_CODE'))
+    curr_time = time.time()
+    while True:
+        try:
+            if os.path.getmtime(os.environ.get('VERIFY_CODE')) < curr_time:
+                print('please input verify code from', os.environ.get('VERIFY_CODE'))
+                time.sleep(5)
+                continue
+            with open(os.environ.get('VERIFY_CODE')) as fp:
+                code = json.load(fp)
+                if code.get('sms') is not None:
+                    return code.get('sms')
+            print('please input sms code')
+            time.sleep(5)
+        except:
+            print('please input sms code')
+            time.sleep(5)
+
+
 def get_verfiy_code():
     if "VERIFY_CODE" not in os.environ:
         x = input('please input verify code x')
@@ -70,11 +92,14 @@ def jd_login(driver, userInfo, conf):
         print('not verify code')
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
         print('RiskUri:',driver.current_url)
+        print(driver.page_source)
         driver.find_element_by_class_name('.mode-btn.voice-mode').click()
         time.sleep(3)
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/sms_risk'):
         print('SmsUri:',driver.current_url)
-        sms = input('Please input smscode:')
+        print(driver.page_source)
+        driver.find_element_by_id('getMesCode').click();
+        sms = get_sms_code()
         driver.find_element_by_id('authCode').send_keys(sms)
         time.sleep(1)
         driver.find_element_by_class_name('smsSubmit').click()

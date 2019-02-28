@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from gy import config
 from gy.jd import Common
+from gy.util import common
 import time
 import datetime
 import traceback
@@ -27,10 +28,11 @@ def visit_activity(driver, userInfo):
 
 
 def click_to_get(driver):
-    driver.execute_script('$("#m_1_5").children().eq(0).click()')
+    driver.execute_script('$("#m_1_5").children().first().click()')
     driver.execute_script('$("#m_1_5").children().eq(1).click()')
+    driver.get_screenshot_as_file('%sjd_coupon.png' % conf.get_screen_path())
+    print('URL for clicking to get coupon PNG\nhttp://%s/pj/gy/jd/coupon_png.html' % common.get_host_ip())
     time.sleep(5)
-
 
 
 def get_act_key():
@@ -90,6 +92,7 @@ chrome_options.add_argument(
     'user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"')
 chrome_options.add_argument('--lang=zh-CN.UTF-8')
 chrome_options.add_argument('--user-data-dir=%s' % conf.get_chrome_user_dir())
+print(conf.get_chrome_user_dir())
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--disable-dev-shm-usage')
 if conf.get_http_proxy():
@@ -100,7 +103,7 @@ if conf.get_chrome_executable_path():
 else:
     driver = webdriver.Chrome(options=chrome_options)
 
-driver.set_window_size(640, 700)
+driver.set_window_size(640, 900)
 try:
     print('UserName:', userInfo['username'])
     cnt = 1
