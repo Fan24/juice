@@ -116,7 +116,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
-        Common.block_precise_until_start(True)
+        Common.block_precise_until_start(False)
         click_to_get(driver)
         break
 except:
