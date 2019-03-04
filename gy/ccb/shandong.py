@@ -87,7 +87,7 @@ def do_order(driver):
     common.block_precise_until_start(False)
     print('prepare to make order')
 
-    max_try = 6
+    max_try = 3
     print("try to add cart with max:", max_try)
     driver.execute_script(js_addcart, max_try)
     max_try = 20000

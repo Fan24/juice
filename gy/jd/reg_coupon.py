@@ -10,7 +10,8 @@ import traceback
 
 conf = config.GyConfig()
 param = {
-    "activityUrl": "https://pro.m.jd.com/mall/active/3i9KPjq2wB4A7VGXnhMpyjEdGyv9/index.html",
+    "activityUrl": "https://pro.m.jd.com/mall/active/ajxN8wHWSbPejA5G2pC4jNGZLkg/index.html",
+    "coupon_id" : "m_1_2"
 }
 
 
@@ -18,7 +19,7 @@ def visit_activity(driver, userInfo):
     print('go to ', param['activityUrl'])
     driver.get(param['activityUrl'])
     print('we are at', driver.current_url)
-    driver.execute_script('$("#m_1_5").children().first().click()')
+    driver.execute_script('$("#%s").children().first().click()' % param['coupon_id'])
     time.sleep(5)
     if driver.current_url.startswith('https://plogin.m.jd.com/user/login.action'):
         Common.jd_login(driver, userInfo, conf)
@@ -28,8 +29,12 @@ def visit_activity(driver, userInfo):
 
 
 def click_to_get(driver):
-    driver.execute_script('$("#m_1_5").children().first().click()')
-    driver.execute_script('$("#m_1_5").children().eq(1).click()')
+    command = []
+    command.append('$("#%s").children().first().click()' % param['coupon_id'])
+    command.append('$("#%s").children().eq(1).click()' % param['coupon_id'])
+    for cmd in command:
+        driver.execute_script(cmd)
+        print(cmd)
     driver.get_screenshot_as_file('%sjd_coupon.png' % conf.get_screen_path())
     print('URL for clicking to get coupon PNG\nhttp://%s/pj/gy/jd/coupon_png.html' % common.get_host_ip())
     time.sleep(5)
@@ -111,7 +116,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
-        Common.block_precise_until_start(False)
+        Common.block_precise_until_start(True)
         click_to_get(driver)
         break
 except:
