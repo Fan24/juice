@@ -16,7 +16,8 @@ def go_dashboard(driver, user_info):
 
 
 def get_order(driver, param):
-    order_url: str = 'http://chadan.wang/order/getOrderdd623299?JSESSIONID=%s&faceValue=%d&province=&amount=1&channel=2&operator=%s' % (driver.get_cookie('logged')['value'], param['faceValue'], param['operator'])
+    order_url: str = 'http://chadan.wang/order/getOrderdd623299?JSESSIONID=%s&faceValue=%d&province=&amount=1&channel=2' \
+                     '&operator=%s' % (driver.get_cookie('logged')['value'], param['faceValue'], param['operator'])
     driver.get(order_url)
     result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
     print(result)
@@ -77,7 +78,8 @@ def confirm_order(driver, charge_phone):
     driver.find_element_by_id('sureReport').click()
     time.sleep(3)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
-    check_url = 'http://chadan.wang/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3&JSESSIONID=%s' % (today, today, driver.get_cookie('logged')['value'])
+    check_url = 'http://chadan.wang/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3' \
+                '&JSESSIONID=%s' % (today, today, driver.get_cookie('logged')['value'])
     driver.get(check_url)
     qry_result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
     if qry_result['errorCode'] == 200 and qry_result['data']['total'] == 0:
@@ -87,6 +89,90 @@ def confirm_order(driver, charge_phone):
     print(qry_result)
 
     return False
+
+
+def get_charge_order(driver, charge_money, operator_type):
+    cnt = 0
+    sec = 3
+    while True:
+        result = get_job(driver, charge_money, operator_type)
+        if result['code'] == 0:
+            print(
+                '%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), result['chargePhone']))
+            cmd = input('input n to get next charge phone with %d, q to exit\n' % charge_money)
+            if confirm_order(driver, result['chargePhone']) and cmd == "n":
+                continue
+            else:
+                break
+        cnt += 1
+        print('#%d.sleep %s sec' % (cnt, sec))
+        time.sleep(sec)
+
+
+def has_qr_job(driver, amount, operator_type):
+    pool_url = 'http://chadan.wang/order/payForAnotherOrderPooldd623299?JSESSIONID=%s' % driver.get_cookie('logged')['value']
+    driver.get(pool_url)
+    try:
+        pool = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except:
+        print('cloud not get pool', driver.page_source)
+        traceback.print_exc()
+        return {'code': -3}
+    face_val_key = 'faceValue%d' % amount
+    if pool['errorCode'] != 200:
+        return {'code' : -2}
+    for elem in pool['data']:
+        target_op = False
+        for op_typ in operator_type:
+            if elem['operator'] != op_typ:
+                continue
+            target_op = True
+        if target_op and elem[face_val_key] and elem[face_val_key] > 0:
+            return {'code' : 0, 'operator' : elem['operator'], 'faceValue' : amount, 'amount' : 1}
+    return {'code' : -1}
+
+
+def make_qr_order(driver, info):
+    url = 'http://chadan.wang/order/getPayForAnotherOrderdd623299?JSESSIONID=%s&faceValue=%s&operator=%s&amount=%d&' \
+          'channel=1' %(info['logged'], info['faceValue'], info['operator'], info['amount'])
+    driver.get(url)
+    try:
+        order_info = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except:
+        print('cloud not get qr order', driver.page_source)
+        traceback.print_exc()
+        return {'code': -3}
+
+    print(order_info)
+    if order_info['errorCode'] != 200:
+        return {'code' : -2, 'msg' : order_info['errorMsg']}
+    if len(order_info['data']) == 0:
+        return {'code' : -1, 'msg' : 'empty order'}
+    return {'code' : 0, 'msg' : 'success', 'order_id' : order_info['data'][0]['orderId']}
+
+
+def get_qr_order(driver, amount, operator_type):
+    cnt = 0
+    sec = 3
+    logged = driver.get_cookie('logged')['value']
+    print(logged)
+    while True:
+        cnt = cnt + 1
+        result = has_qr_job(driver, amount, operator_type)
+        if result['code'] != 0:
+            print('#%d sleep %d(s)' % (cnt, sec))
+            time.sleep(sec)
+            continue
+        result['logged'] = logged
+        result = make_qr_order(driver, result)
+        if result['code'] != 0:
+            print('#%d could not make order:%s.Sleep %d(s)' % (cnt, result['msg'], sec))
+            time.sleep(sec)
+            continue
+        print('#%d make order with orderId[%s] and faceValue[%d]' % (cnt, result['order_id'], amount))
+        cmd = input('Input n when you are ready to get next, other else will be exit')
+        if cmd != "n":
+            break
 
 
 chrome_options = Options()
@@ -112,23 +198,21 @@ else:
 driver.set_window_size(640, 700)
 try:
     go_dashboard(driver, conf.get_user_info())
-    cnt = 0
-    sec = 3
-    charge_money = 50
-    ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
-    operator_type = ot_array[0]
-    while True:
-        result = get_job(driver, charge_money, operator_type)
-        if result['code'] == 0:
-            print('%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), result['chargePhone']))
-            cmd = input('input n to get next charge phone with %d, q to exit\n'% charge_money)
-            if confirm_order(driver, result['chargePhone']) and cmd == "n":
-                continue
-            else:
-                break
-        cnt += 1
-        print('#%d.sleep %s sec' % (cnt, sec))
-        time.sleep(sec)
+    order_type_list = ["QR", "MBL_CHRG"];
+    order_type = order_type_list[0]
+    if order_type == "QR":
+        print('Go to get QR order')
+        amount = 500
+        ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
+        operator_type = list()
+        #operator_type.append(ot_array[2])
+        operator_type.append(ot_array[3]), operator_type.append(ot_array[1])
+        get_qr_order(driver, amount, operator_type)
+    else:
+        charge_money = 100
+        ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
+        operator_type = ot_array[0]
+        get_charge_order(driver, charge_money, operator_type)
 except:
     traceback.print_exc()
 finally:

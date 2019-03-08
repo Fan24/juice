@@ -64,6 +64,7 @@ def prepare_env(driver, conf):
 
 
 def get_qpay_order(driver, id):
+    print('Get QPay order')
     driver.get('http://www.mf178.cn/customer/qpay/mytasks')
     js = r'''
         var js_result = {}, target_url = "http://www.mf178.cn/customer/qpay/ajax?action=get_tasks&id=" + arguments[0];
@@ -98,7 +99,8 @@ def get_qpay_order(driver, id):
                 "SEQ" : arguments[1]
             },
             success: function (result) {
-                var $order = $(result).find('table:last').find('td:first');
+                console.info(result);
+                var $order = $(result).find('table').last().find('td').first();
                 if($.isEmptyObject($order) || $order.length == 0){
                     js_result['code'] = -1;
                 }else{
@@ -129,16 +131,20 @@ def get_qpay_order(driver, id):
         cnt += 1
 
 
-def report(driver, order_id):
-    url = "http://www.mf178.cn/customer/order/ajax?action=task_report&op=succ&id=%s" % order_id
+def report(driver):
     now_url = driver.current_url
+    driver.get('http://www.mf178.cn/mobile/order/order_list_doing')
+    order_id = driver.find_elements_by_class_name('mui-col-xs-7')[0].text
+    print(order_id)
+    url = "http://www.mf178.cn/customer/order/ajax?action=task_report&op=succ&id=%s" % order_id
     driver.get(url)
     result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    result['url'] = url
     driver.get(now_url)
     return result
 
 
-def get_order(driver, amout, num):
+def get_order(driver, amout, num, operator_id):
     js = r'''
         var target_url = "http://www.mf178.cn/customer/order/ajax?_" + new Date().getTime();
         var js_result = {};
@@ -168,7 +174,7 @@ def get_order(driver, amout, num):
         var target_url = "http://www.mf178.cn/customer/order/get_tasks?_" + new Date().getTime();
         var param_data = {
             "amount" : arguments[0],
-            "operator_id" : "0",
+            "operator_id" : arguments[3],
             "prov_name" : "",
             "count" : arguments[1],
             "role" : "1",
@@ -201,14 +207,15 @@ def get_order(driver, amout, num):
         print('#%d attempting to get phone number' % cnt)
         result = driver.execute_script(js)
         if result.get('code') == 0:
-            sb_result = driver.execute_script(js_submit, amout, num, result['SEQ'])
+            sb_result = driver.execute_script(js_submit, amout, num, result['SEQ'], operator_id)
             if sb_result.get('code') == '0' and sb_result.get('phone') is not None:
                 print('%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), sb_result['phone']))
                 command = input('n for report and get next order, q for report and exit')
                 try:
-                    report_result = report(driver, sb_result['order_id'])
+                    report_result = report(driver)
                     if report_result.get('type') != 'refresh':
                         print('report error', report_result)
+                        print('order info', sb_result)
                         input('please interupt from manual, input any to continue')
                 except:
                     print(report_result)
@@ -235,8 +242,23 @@ try:
         print('Retry to prepare enviroment#', cnt)
     if cnt > retry:
         exit(1)
-    get_order(driver, 100, 1)
-    #get_qpay_order(driver, 12)
+    order_type_list = ["QR", "MBL_CHRG"]
+    order_type = order_type_list[0]
+    if order_type == "MBL_CHRG":
+        operators = {"MOBILE": "1", "UNICOM": "2", "ANY": "0"}
+        operator_key = ["UNICOM", "MOBILE", "ANY"]
+        amount = 50
+        count = 1
+        get_order(driver, amount, count, operators[operator_key[1]])
+    else:
+        id_list = {"UNION_100": 21, "UNION_200": 22, "UNION_300": 23, "UNION_500": 25,
+                   "MOBILE_100": 31, "MOBILE_200": 32, "MOBILE_300": 33, "MOBILE_500": 35,
+                   "TELECOM_100": 11, "TELECOM_200": 12, "TELECOM_300": 13, "TELECOM_500": 15
+                   }
+        operators = ["UNION", "MOBILE", "TELECOM"]
+        operator = operators[0]
+        amount = 500
+        get_qpay_order(driver, id_list.get('%s_%d' % (operator, amount)))
 except:
     traceback.print_exc()
 finally:
