@@ -51,6 +51,7 @@ def get_cart_list(driver, need_tick):
     print(driver.current_url)
     key_map = {'freshList': 'freshList', 'aniList': 'onionList', 'drinksList' : 'wineFirstList', 'seasList' : 'onionList'}
     data = json.loads(driver.find_element_by_xpath('/html/body/pre').text)['data']
+    print(data)
     cart_ids = {'foreignList': []}
     foreign_list = data['foreignList']
     if 0 < len(foreign_list):
@@ -65,8 +66,6 @@ def get_cart_list(driver, need_tick):
         if 0 == len(array):
             continue
         for good in array[0]['goods']:
-            if good['isTick'] != 1:
-                continue
             cart_ids[val].append({"id": str(good['product']['id']), "count" : str(int(good['num']))})
     return cart_ids
 

@@ -16,9 +16,10 @@ def go_dashboard(driver, user_info):
 
 
 def get_order(driver, param):
-    order_url: str = 'http://chadan.wang/order/getOrderdd623299?JSESSIONID=%s&faceValue=%d&province=&amount=1&channel=2' \
-                     '&operator=%s' % (driver.get_cookie('logged')['value'], param['faceValue'], param['operator'])
+    order_url: str = 'http://api.chadan.wang/order/getOrderdd623299?JSESSIONID=%s&faceValue=%d&province=&amount=1&channel=2' \
+                     '&operator=%s' % (param['jsession'], param['faceValue'], param['operator'])
     driver.get(order_url)
+    print(driver.page_source)
     result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
     print(result)
 
@@ -33,7 +34,7 @@ def get_order(driver, param):
     return {'code':code, 'chargePhone': phone}
 
 
-def get_job(driver, charge_type, oper_type):
+def get_job(driver, charge_type, oper_type,jsession):
     """
         get order form chadang
     :param driver:
@@ -41,7 +42,7 @@ def get_job(driver, charge_type, oper_type):
     :param oper_type: MOBILE,UNICOM,TELECOM,None. Choose one from four, None for not specified.
     :return:
     """
-    pool_url = 'http://chadan.wang/order/pooldd623299?JSESSIONID=%s' % driver.get_cookie('logged')['value']
+    pool_url = 'http://api.chadan.wang/order/pooldd623299?JSESSIONID=%s' % jsession
     driver.get(pool_url)
     try:
         pool = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
@@ -56,7 +57,7 @@ def get_job(driver, charge_type, oper_type):
             continue
         if oper_type is not None and oper_type != operator['operator']:
             continue
-        return get_order(driver, {'faceValue': charge_type, 'operator': operator['operator']})
+        return get_order(driver, {'faceValue': charge_type, 'operator': operator['operator'], 'jsession' : jsession})
     return {'code': -2}
 
 
@@ -69,7 +70,7 @@ def login(driver, user_info):
     print('After login page@', driver.current_url)
 
 
-def confirm_order(driver, charge_phone):
+def confirm_order(driver, charge_phone, jession):
     confirm_url = 'http://chadan.wang/wang/makeMoney'
     driver.get(confirm_url)
     time.sleep(3)
@@ -79,7 +80,7 @@ def confirm_order(driver, charge_phone):
     time.sleep(3)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     check_url = 'http://chadan.wang/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3' \
-                '&JSESSIONID=%s' % (today, today, driver.get_cookie('logged')['value'])
+                '&JSESSIONID=%s' % (today, today, jession)
     driver.get(check_url)
     qry_result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
     if qry_result['errorCode'] == 200 and qry_result['data']['total'] == 0:
@@ -94,13 +95,14 @@ def confirm_order(driver, charge_phone):
 def get_charge_order(driver, charge_money, operator_type):
     cnt = 0
     sec = 3
+    jsession = driver.get_cookie('logged')['value']
     while True:
-        result = get_job(driver, charge_money, operator_type)
+        result = get_job(driver, charge_money, operator_type, jsession)
         if result['code'] == 0:
             print(
                 '%s--charge phone:%s' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'), result['chargePhone']))
             cmd = input('input n to get next charge phone with %d, q to exit\n' % charge_money)
-            if confirm_order(driver, result['chargePhone']) and cmd == "n":
+            if confirm_order(driver, result['chargePhone'], jsession) and cmd == "n":
                 continue
             else:
                 break
@@ -199,7 +201,7 @@ driver.set_window_size(640, 700)
 try:
     go_dashboard(driver, conf.get_user_info())
     order_type_list = ["QR", "MBL_CHRG"];
-    order_type = order_type_list[0]
+    order_type = order_type_list[1]
     if order_type == "QR":
         print('Go to get QR order')
         amount = 500
