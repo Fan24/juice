@@ -11,7 +11,7 @@ class GyConfig:
             file_name = os.environ['CONF_FILE']
         config_file='%sgy/%s' % (PROJ_PATH, file_name)
         self.proj_path=PROJ_PATH
-        self.user_info = {"username": "13119182428", "password": "lcl12345"}
+        self.user_info = {"username": "17666061115", "password": "lcl12345"}
         with open(config_file) as fp:
             self.config = json.load(fp)
 
@@ -64,5 +64,4 @@ class GyConfig:
                 self.user_info = json.load(fp)
         except:
             print('Unable to load user info, we use default info')
-            return {'username':'13632265913', 'password': 'lcl1229'}
         return self.user_info

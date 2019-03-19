@@ -11,7 +11,7 @@ import traceback
 conf = config.GyConfig()
 param = {
     "activityUrl": "https://pro.m.jd.com/mall/active/ajxN8wHWSbPejA5G2pC4jNGZLkg/index.html",
-    "coupon_id" : "m_1_2"
+    "coupon_id" : "m_1_3"
 }
 
 

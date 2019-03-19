@@ -147,7 +147,7 @@ def order_from_cart(driver, hour=None, minute=None, need_tick=True):
     cart_ids_str = to_cart_ids_str(cart_ids)
     coupon_no = get_coupon_no(driver, cart_ids_str)
     print('Coupon no:', coupon_no)
-    common.block_until_start_with_time(False, hour, minute)
+    common.block_precise_until_start(False, hour, minute)
 
     js = r'''
         var target_url = 'https://m.msyc.cc/app/sodrest/createSod/v2?t=' + new Date().getTime();

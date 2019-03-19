@@ -19,7 +19,6 @@ def get_order(driver, param):
     order_url: str = 'http://api.chadan.wang/order/getOrderdd623299?JSESSIONID=%s&faceValue=%d&province=&amount=1&channel=2' \
                      '&operator=%s' % (param['jsession'], param['faceValue'], param['operator'])
     driver.get(order_url)
-    print(driver.page_source)
     result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
     print(result)
 

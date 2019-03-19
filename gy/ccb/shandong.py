@@ -37,14 +37,14 @@ def do_order(driver):
             "url":  '/flow/add_cart',
             "dataType" : "json", 
             data:{
-                "id": 46, 
+                "id": 43, 
                 "type" : 3,
                 "num": 1
             },
             success: function (data) {
                 console.info("TagID:" + tagID + "-----" + JSON.stringify(data));
                 if(data.code == 'success' || data.error == 'success') {
-                    window.location.href='/flow/team/46';
+                    window.location.href='/flow/team/43';
                 }
             }
         });
@@ -94,7 +94,7 @@ def do_order(driver):
     print('start to check whether succeed to add cart or not with %d time(s)' % max_try)
     st = datetime.datetime.now()
     for test in range(1, max_try):
-        if driver.current_url.endswith('46'):
+        if driver.current_url.endswith('43'):
             print('success to add cart, next for preparing confirm environment, execute confirm')
             print(driver.page_source)
             driver.execute_script(js_confrim)

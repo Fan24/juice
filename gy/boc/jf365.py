@@ -69,7 +69,7 @@ def do_order(driver, url_list):
     console.info(arguments[0]);
     xmlhttp.send();'''
 
-    common.block_until_start_by_second(False, 1)
+    common.block_precise_until_start(False)
     st = datetime.datetime.now()
     for url in url_list:
         print(url)
@@ -118,7 +118,7 @@ else:
 driver.set_window_size(640, 700)
 try:
     prepare_cnt = 1
-    while not prepare_env(driver, '0000-npSwMlv4LjqjC5xmcKp5To:19fhdb84', '81eKNxj2m0sCC0sQSxj29fExj2eKNxu'):
+    while not prepare_env(driver, '0000JKBBhGRs7qLUziystIwfkrL:1bno0fgf0', '001ApKDO0Qi2b42Nz6FO0uarDO0ApKD5'):
         print('Retry:',prepare_cnt)
         prepare_cnt += 1
         if prepare_cnt > 5:
