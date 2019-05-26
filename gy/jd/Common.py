@@ -137,3 +137,35 @@ def block_until_start_by_second(quick, sec_ahead):
     gap = math.floor((st - ct).total_seconds()) - sec_ahead
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
     time.sleep(gap)
+
+
+def web_login(driver, user_info, screen_path):
+    print('We are preparing JD web login')
+    driver.get('https://order.jd.com/center/list.action')
+    time.sleep(4)
+    cnt = 0
+    success = True
+    while driver.current_url.startswith('https://passport.jd.com/uc/login'):
+        if cnt > 2:
+            break
+        cnt += 1
+        print('BeforeLogin#', cnt)
+        time.sleep(1)
+    if driver.current_url.startswith('https://passport.jd.com/uc/login'):
+        success = False
+        driver.execute_script('$(".login-form").css("float", "left")')
+        driver.find_element_by_class_name('login-tab-l').click()
+        time.sleep(2)
+        web_qr_file = '%sweb_login_qr.png' % screen_path
+        driver.get_screenshot_as_file(web_qr_file)
+        while driver.current_url.startswith('https://passport.jd.com/uc/login'):
+            print('scan QR to login user:%s from URL\thttp://%s/pj/gy/jd/web_qr.html'
+                  % (user_info['username'], common.get_host_ip()))
+            time.sleep(4)
+        success = True
+    driver.get_screenshot_as_file('%safterWebLogin.png' % screen_path)
+    print('After web login url, we are at',driver.current_url)
+    time.sleep(2)
+    return success
+
+

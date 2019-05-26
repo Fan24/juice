@@ -30,6 +30,7 @@ def visit_activity(driver, userInfo):
 
 def click_to_get(driver):
     command = []
+    command.append('$("#%s").children().eq(2).click()' % param['coupon_id'])
     command.append('$("#%s").children().first().click()' % param['coupon_id'])
     command.append('$("#%s").children().eq(1).click()' % param['coupon_id'])
     for cmd in command:
