@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-import time
+from enum import Enum
 import datetime,time,json
 import math
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from gy import config
-import traceback
 import socket
 
 
@@ -98,3 +96,13 @@ def get_host_ip():
     finally:
         s.close()
     return ip
+
+
+class OPERATOR(Enum):
+    ANY = 0
+    MOBILE = 1 #移动
+    UNICOM = 2 #联通
+
+    """
+    """
+    TELECOM = 3  #电信
