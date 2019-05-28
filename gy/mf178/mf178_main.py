@@ -47,7 +47,7 @@ try:
     if order_type == "MBL_CHRG":
         operators = {"MOBILE": "1", "UNICOM": "2", "ANY": "0"}
         operator_key = ["UNICOM", "MOBILE", "ANY"]
-        amount = 50
+        amount = 100
         count = 1
         loop_to_get_order(mf178, driver, amount, count, operators[operator_key[1]])
     else:

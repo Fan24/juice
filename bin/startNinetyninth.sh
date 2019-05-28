@@ -13,11 +13,11 @@ export PYTHONPATH=$PON_PATH
 export PROJ_PATH=$baseDir
 export CONF_FILE=$config_file
 cd $baseDir
-srcDir="/home/ap/fan/OnionMall/gy/mf178/"
-pythonSrc="mf178_main.py"
+srcDir="/home/ap/fan/OnionMall/gy/ninetyninth/"
+pythonSrc="charge99.py"
 dataDir="/home/ap/fan/OnionMall/data/"
 logDir="/home/ap/fan/OnionMall/log/"
-userFn="mf178.json"
+userFn="99.json"
 
 if [ "$1" ];then
 	userFn=$1
