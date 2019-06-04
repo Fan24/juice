@@ -32,9 +32,9 @@ driver.set_window_size(640, 700)
 try:
     nn = Ninetyninth(conf.get_user_info())
     nn.login(driver)
-    face_value = 100
+    face_value = 30
     ticker = 0
-    operator = OPERATOR.TELECOM
+    operator = OPERATOR.ANY
     print(operator.value)
     while True:
         ticker += 1
