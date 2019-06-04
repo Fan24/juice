@@ -177,7 +177,7 @@ def has_qr_job(driver, amount, operator_type):
 
 
 def make_qr_order(driver, info):
-    url = 'http://chadan.wang/order/getPayForAnotherOrderdd623299?JSESSIONID=%s&faceValue=%s&operator=%s&amount=%d&' \
+    url = 'http://api.chadan.cn/order/getPayForAnotherOrderdd623299?JSESSIONID=%s&faceValue=%s&operator=%s&amount=%d&' \
           'channel=1' %(info['logged'], info['faceValue'], info['operator'], info['amount'])
     driver.get(url)
     try:

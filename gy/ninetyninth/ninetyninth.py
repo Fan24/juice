@@ -137,7 +137,7 @@ class Ninetyninth:
         cnt = 1
         print('#%d to get order' % cnt)
         while not self.get_phone_charge_order(driver, face_value, operator):
-            time.sleep(3)
+            time.sleep(2)
             cnt += 1
             print('#%d to get order with [%s]' % (cnt, operator))
         print(self.order)
