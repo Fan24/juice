@@ -3,11 +3,12 @@
   "proj_path": "C:/Users/Gy/PycharmProjects/OnionMall",
   "chrome_user_dir": "d:/chrome/db11",
   "chrome_user_dir_chadang": "d:/chrome/chadang",
+  "chrome_user_dir_99": "d:/chrome/ninetyninth",
   "chrome_user_dir_ccb_sd": "d:/chrome/ccb_sd",
   "chrome_user_dir_mf178": "d:/chrome/mf178",
   "chrome_user_dir_boc": "d:/chrome/boc",
   "chrome_execute_path" : "C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe",
   "is_headless": false,
   "http_proxy": "http://workproxy:7081",
-  "through_proxy" : true
+  "through_proxy" : false
 }

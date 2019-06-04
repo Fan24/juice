@@ -1,11 +1,54 @@
 #!/usr/bin/env python
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from gy import config
 import time
 import json
 import datetime
 import traceback
+
+
+def load_json(driver):
+    """
+    load /hhtml/body/pre to json object
+    :param driver:
+    :return:
+    """
+    try:
+        return json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except NoSuchElementException:
+        print(driver.page_source)
+        traceback.print_exc()
+        return {'errorCode' : '404'}
+
+
+def get_real_phone_recharge(driver, faceValue):
+    """
+    costless order
+    :param driver:
+    :param faceValue:
+    :return:
+    """
+    jsession = driver.get_cookie('logged')['value']
+    face_key = 'faceValue%d' % faceValue
+    cnt = 0
+    while True:
+        time.sleep(3)
+        cnt += 1
+        print('#%d to get real phone recharge' % cnt)
+        driver.get('http://www.chadan.cn/order/costOrderPool?JSESSIONID=%s' % jsession)
+        result = load_json(driver)
+        if result.get('errorCode') != 200 or result.get('data').get(face_key) <= 0:
+            continue
+        driver.get('http://www.chadan.cn/order/getDirectCostOrder?JSESSIONID=%s&faceValue=%d' %(jsession, faceValue))
+        result = load_json(driver)
+        print(result)
+        if result.get('errorCode') == 200:
+            print('Order found with charge value %d' % faceValue)
+            cmd = input('input n for next, other to quit')
+            if cmd != "n":
+                break
 
 
 def go_dashboard(driver, user_info):
@@ -78,7 +121,7 @@ def confirm_order(driver, charge_phone, jession):
     driver.find_element_by_id('sureReport').click()
     time.sleep(3)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
-    check_url = 'http://chadan.wang/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3' \
+    check_url = 'http://api.chadan.cn/order/queryUserOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=3' \
                 '&JSESSIONID=%s' % (today, today, jession)
     driver.get(check_url)
     qry_result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
@@ -199,16 +242,20 @@ else:
 driver.set_window_size(640, 700)
 try:
     go_dashboard(driver, conf.get_user_info())
-    order_type_list = ["QR", "MBL_CHRG"];
+    order_type_list = ["QR", "MBL_CHRG", "PHN_RECH"];
     order_type = order_type_list[1]
     if order_type == "QR":
         print('Go to get QR order')
         amount = 500
         ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
         operator_type = list()
-        #operator_type.append(ot_array[2])
-        operator_type.append(ot_array[3]), operator_type.append(ot_array[1])
+        operator_type.append(ot_array[2])
+        #operator_type.append(ot_array[3]), operator_type.append(ot_array[1])
         get_qr_order(driver, amount, operator_type)
+    elif order_type == "PHN_RECH":
+        faceValue_Array = [50, 100, 200, 300, 500]
+        faceVaule = faceValue_Array[4]
+        get_real_phone_recharge(driver, faceVaule)
     else:
         charge_money = 100
         ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
