@@ -23,5 +23,5 @@ userFn="info.json"
 if [ "$1" ];then
 	userFn=$1
 fi
-nohup python -u $srcDir$pythonSrc $userFn> $logDir/JD_Pay$userFn.log 2>&1 &
+nohup python -u $srcDir$pythonSrc $userFn> $logDir/JD_Pay.$userFn.log 2>&1 &
 #python $srcDir$pythonSrc father.json
