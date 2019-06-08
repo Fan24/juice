@@ -29,7 +29,7 @@ def get_pay_order_info_and_prepare_to_pay(driver):
     driver.execute_script('$(".entrance_text").first().click()')
     order_info['order_id'] = driver.execute_script('return $(".oh_btn").first().attr("data-orderid");')
     driver.execute_script('$(".oh_btn").first().click()')
-    time.sleep(3)
+    time.sleep(5)
     order_amount = driver.execute_script('return $(".JS-pay-total").text();')[1:]
     order_info['order_amount'] = float(order_amount)
     amount_to_pay = re.compile('\d+.\d{2}').search(driver.execute_script('return $(".pay-next").text();')).group()
