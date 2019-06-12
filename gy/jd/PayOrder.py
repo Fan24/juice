@@ -50,7 +50,7 @@ def ready_to_inputpw(driver):
 
 
 def pay_order(driver, order_info, safe_amount, pay_password, screen_path):
-    for x in range(0, 2):
+    for x in range(0, 10):
         print('refresh #', x)
         #driver.refresh()
         driver.execute_script('location.reload();')
@@ -81,19 +81,19 @@ def pay_order(driver, order_info, safe_amount, pay_password, screen_path):
                 if result is not None:
                     print('Password input ready with loop #', pswd_ready)
                     break
-            if not need_password:
-                return True
-                break
-            for ps in pay_password:
-                dk = 'div[data-key="%d"]' % ps
-                driver.find_element_by_css_selector(dk).click()
+            if need_password:
+                print('feeding pay password')
+                for ps in pay_password:
+                    dk = 'div[data-key="%d"]' % ps
+                    driver.find_element_by_css_selector(dk).click()
             captch_dir = '%sjd_pay.png' % screen_path
             time.sleep(2)
             driver.get_screenshot_as_file(captch_dir)
             print('URL to see pay result \nhttp://%s/pj/gy/jd/web_pay_result.html' % common.get_host_ip())
             print('We sleep a while before to end!')
-            time.sleep(5)
+            time.sleep(10)
             return True
+    print('Uable to arrive safe zone')
     return False
 
 
@@ -139,7 +139,7 @@ try:
     order_info = get_pay_order_info_and_prepare_to_pay(driver)
     print('OrderID:%s, order amount:%.2f' % (order_info['order_id'], order_info['order_amount']))
     Common.block_precise_until_start(False)
-    safe_amount = 2.0
+    safe_amount = 30.0
     if pay_order(driver, order_info, safe_amount, userInfo['pay_password'], conf.get_screen_path()) \
             and order_clear(driver):
         print('Pay complete')
