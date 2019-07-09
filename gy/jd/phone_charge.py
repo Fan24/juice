@@ -11,7 +11,8 @@ import traceback
 conf = config.GyConfig()
 param = {
     "charge_url": "https://newcz.m.jd.com/newcz/index.action",
-    "mobile_jd_home_url": "https://home.m.jd.com"
+    "mobile_jd_home_url": "https://home.m.jd.com",
+    "jdpay_passowrd" : ""
 }
 
 
@@ -70,6 +71,7 @@ def mf178_order(driver, source_user_info, face_value, op_type, pay_type, discoun
         ticker += 1
         time.sleep(5)
         print('#%d to get order from mf178' % ticker)
+        mf178.go_home(driver)
         result = mf178.get_order(driver, face_value, 1, op_type)
         if result.get('code') != '0' or result.get('phone') is None:
             continue
@@ -119,7 +121,9 @@ def place_charge_order(driver, mobile_phone, faceamount, discount):
     time.sleep(2)
     try:
         pay_pw_elem = driver.find_element_by_class_name('pop-input')
-        pay_pw_elem.send_keys(input('please input jd pay password'))
+        if param.get('jdpay_password') == "":
+            param['jdpay_password'] == input('please input jd pay password once')
+        pay_pw_elem.send_keys(param.get('jdpay_password'))
         driver.find_element_by_id('simplePopBtnSure').click()
     except:
         print('Do not need to input pay password')

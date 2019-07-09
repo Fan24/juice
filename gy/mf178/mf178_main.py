@@ -49,7 +49,7 @@ try:
         operator_key = ["UNICOM", "MOBILE", "ANY"]
         amount = 100
         count = 1
-        loop_to_get_order(mf178, driver, amount, count, operators[operator_key[1]])
+        loop_to_get_order(mf178, driver, amount, count, operators[operator_key[2]])
     else:
         id_list = {"UNION_100": 21, "UNION_200": 22, "UNION_300": 23, "UNION_500": 25,
                    "MOBILE_100": 31, "MOBILE_200": 32, "MOBILE_300": 33, "MOBILE_500": 35,

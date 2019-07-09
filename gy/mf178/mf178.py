@@ -12,6 +12,9 @@ class MF178:
                     }
         self.user_info = user_info
 
+    def go_home(self, driver):
+        driver.get(self.url['home'])
+
     def login(self, driver, screen_path):
         print('Prepare to login@', driver.current_url)
         js = '''
