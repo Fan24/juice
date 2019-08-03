@@ -2,8 +2,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from gy import config
+from gy.util import common
 from gy.jd import Common
 import time
+import datetime
 import traceback
 
 conf = config.GyConfig()
@@ -69,7 +71,6 @@ def login_if_logout(driver, userInfo, conf, type):
         driver.get(url)
         time.sleep(2)
         if driver.current_url.startswith(url):
-            print('Login success!')
             return True
         if type == "pc" and pc_login(driver, userInfo, conf):
             return True
@@ -78,12 +79,11 @@ def login_if_logout(driver, userInfo, conf, type):
     return False
 
 
-def make_order(driver, product_url, face_value, discount):
+def make_order(driver, product_url, face_value, discount, screen_path):
     count = 0
     succ = False
     while count < 10:
         count = count + 1
-        driver.get(product_url)
         price = float(driver.execute_script('''
             return document.getElementsByName('goods[0].tempCurrentPrice')[0].value;
         '''))
@@ -96,14 +96,21 @@ def make_order(driver, product_url, face_value, discount):
         while driver.current_url.startswith(product_url):
             continue
         confirm_page_url = driver.current_url
+        print('Time to click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         driver.execute_script('''
             document.getElementsByClassName('z-submitbtn')[0].click();
+            console.debug('to-click confirm');
             ''')
+        print('Time to click confirm[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         time.sleep(2)
         if driver.current_url != confirm_page_url:
             succ = True
         break
     print('We loop %d time(s)' % count)
+    driver.fullscreen_window()
+    result_shot = '%skl_order.png' % screen_path
+    driver.get_screenshot_as_file(result_shot)
+    print('URL to see make order result \nhttp://%s/pj/gy/netease/order_result.html' % common.get_host_ip())
     if succ:
         print('Success to make order')
     else:
@@ -132,12 +139,11 @@ if conf.get_chrome_executable_path():
 else:
     driver = webdriver.Chrome(options=chrome_options)
 
-driver.set_window_size(640, 900)
+driver.set_window_size(900, 1200)
 try:
     web_mode = "pc"
     if not login_if_logout(driver, userInfo, conf, web_mode):
         print('Login FAIL, exit')
-        input('input to exit')
         exit(1)
     print('Login success with user', userInfo['username'])
     app_store_product_id = {
@@ -147,15 +153,17 @@ try:
         "100": "5286150",
         "50": "5286007"
     }
-    product_face = "500"
+    product_face = "200"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
+    driver.get(app_store_product_url)
     Common.block_until_start(False)
     discount = 0.95
-    make_order(driver, app_store_product_url, int(product_face), discount)
+    make_order(driver, app_store_product_url, int(product_face), discount, conf.get_screen_path())
 
 except:
     traceback.print_exc()
 finally:
+    input('input to end')
     driver.close()
     driver.quit()
     print('END.OF.LINE')
