@@ -160,7 +160,7 @@ try:
     product_face = "100"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
     driver.get(app_store_product_url)
-    Common.block_until_start(True)
+    Common.block_until_start(False)
     discount = 0.95
     make_order(driver, app_store_product_url, int(product_face), discount, conf.get_screen_path())
 
