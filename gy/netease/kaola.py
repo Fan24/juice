@@ -68,8 +68,11 @@ def login_if_logout(driver, userInfo, conf, type):
         url = param.get('pc_order_url')
     for cnt in range(1, 4):
         print('#%s to login' % cnt)
-        driver.get(url)
-        time.sleep(2)
+        try:
+            driver.get(url)
+        except:
+            print('log error')
+            continue
         if driver.current_url.startswith(url):
             return True
         if type == "pc" and pc_login(driver, userInfo, conf):
@@ -107,7 +110,7 @@ def make_order(driver, product_url, face_value, discount, screen_path):
             succ = True
         break
     print('We loop %d time(s)' % count)
-    driver.fullscreen_window()
+    driver.maximize_window()
     result_shot = '%skl_order.png' % screen_path
     driver.get_screenshot_as_file(result_shot)
     print('URL to see make order result \nhttp://%s/pj/gy/netease/order_result.html' % common.get_host_ip())
@@ -139,7 +142,8 @@ if conf.get_chrome_executable_path():
 else:
     driver = webdriver.Chrome(options=chrome_options)
 
-driver.set_window_size(900, 1200)
+driver.set_window_size(1130, 900)
+driver.set_page_load_timeout(30)
 try:
     web_mode = "pc"
     if not login_if_logout(driver, userInfo, conf, web_mode):
@@ -153,17 +157,16 @@ try:
         "100": "5286150",
         "50": "5286007"
     }
-    product_face = "200"
+    product_face = "100"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
     driver.get(app_store_product_url)
-    Common.block_until_start(False)
+    Common.block_until_start(True)
     discount = 0.95
     make_order(driver, app_store_product_url, int(product_face), discount, conf.get_screen_path())
 
 except:
     traceback.print_exc()
 finally:
-    input('input to end')
     driver.close()
     driver.quit()
     print('END.OF.LINE')
