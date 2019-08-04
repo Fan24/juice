@@ -85,27 +85,36 @@ def login_if_logout(driver, userInfo, conf, type):
 def make_order(driver, product_url, face_value, discount, screen_path):
     count = 0
     succ = False
-    while count < 10:
+    while count < 5:
         count = count + 1
+        driver.refresh()
         price = float(driver.execute_script('''
             return document.getElementsByName('goods[0].tempCurrentPrice')[0].value;
         '''))
         print('PRICE[%.2f], discount[%.2f]' % (price, discount))
         if price > face_value * discount:
             continue
+        print('Time at click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         driver.execute_script('''
             document.getElementsByName('goods[0].tempBuyAmount')[1].value = 100;
                 document.getElementById('buyBtn').click();''')
         while driver.current_url.startswith(product_url):
             continue
+        print('Time at after click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         confirm_page_url = driver.current_url
-        print('Time to click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
-        driver.execute_script('''
-            document.getElementsByClassName('z-submitbtn')[0].click();
-            console.debug('to-click confirm');
-            ''')
-        print('Time to click confirm[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
-        time.sleep(2)
+        for x in range(1, 10):
+            try:
+                print('#%d--Time to click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+                driver.execute_script('''
+                    document.getElementsByClassName('z-submitbtn')[0].click();
+                    console.debug('to-click confirm');
+                    ''')
+                print('%d--Time after click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+                if driver.current_url != confirm_page_url:
+                    break
+            except:
+                print('#d-confirm order fail' % x)
+        time.sleep(10)
         if driver.current_url != confirm_page_url:
             succ = True
         break
@@ -121,14 +130,16 @@ def make_order(driver, product_url, face_value, discount, screen_path):
     return succ
 
 
+web_mode = "pc"
 userInfo = conf.get_user_info()
 chrome_options = Options()
 if conf.is_headless():
     chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-web-security')
-##chrome_options.add_argument(
- ##   'user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) '
-  ##  'Version/9.0 Mobile/13B143 Safari/601.1"')
+if web_mode == "mobile":
+    chrome_options.add_argument(
+        'user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) '
+        'Version/9.0 Mobile/13B143 Safari/601.1"')
 chrome_options.add_argument('--lang=zh-CN.UTF-8')
 chrome_options.add_argument('--user-data-dir=%s' % conf.get_chrome_user_dir())
 print('chrome user path:%s' % conf.get_chrome_user_dir())
@@ -145,7 +156,6 @@ else:
 driver.set_window_size(1130, 900)
 driver.set_page_load_timeout(30)
 try:
-    web_mode = "pc"
     if not login_if_logout(driver, userInfo, conf, web_mode):
         print('Login FAIL, exit')
         exit(1)
@@ -155,7 +165,7 @@ try:
         "500" : "5287149",
         "200" : "5287147",
         "100": "5286150",
-        "50": "5286007"
+        "50": "5286007True"
     }
     product_face = "100"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
@@ -163,7 +173,6 @@ try:
     Common.block_until_start(False)
     discount = 0.95
     make_order(driver, app_store_product_url, int(product_face), discount, conf.get_screen_path())
-
 except:
     traceback.print_exc()
 finally:
