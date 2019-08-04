@@ -85,7 +85,7 @@ def login_if_logout(driver, userInfo, conf, type):
 def make_order(driver, product_url, face_value, discount, screen_path):
     count = 0
     succ = False
-    while count < 5:
+    while count < 10:
         count = count + 1
         driver.refresh()
         price = float(driver.execute_script('''
@@ -98,31 +98,40 @@ def make_order(driver, product_url, face_value, discount, screen_path):
         driver.execute_script('''
             document.getElementsByName('goods[0].tempBuyAmount')[1].value = 100;
                 document.getElementById('buyBtn').click();''')
-        while driver.current_url.startswith(product_url):
+        while product_url == driver.current_url:
             continue
         print('Time at after click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         confirm_page_url = driver.current_url
         for x in range(1, 10):
+            current_price = float(driver.execute_script('''
+                console.info(orderInfo.goodsList[0].tempCurrentPrice);
+                return orderInfo.goodsList[0].tempCurrentPrice; 
+            '''))
+            if current_price > face_value * discount:
+                driver.refresh()
+                continue
             try:
                 print('#%d--Time to click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
                 driver.execute_script('''
+                    console.info('before click confirm@' + new Date().toLocaleString());
                     document.getElementsByClassName('z-submitbtn')[0].click();
-                    console.debug('to-click confirm');
+                    console.info('after click confirm@' + new Date().toLocaleString());
                     ''')
                 print('%d--Time after click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+                driver.get_screenshot_as_file('%skl_order%d.png' % (screen_path, x))
                 if driver.current_url != confirm_page_url:
                     break
             except:
                 print('#d-confirm order fail' % x)
-        time.sleep(10)
+        driver.maximize_window()
+        result_shot = '%skl_order.png' % screen_path
+        driver.get_screenshot_as_file(result_shot)
+        print('URL to see make order result \nhttp://%s/pj/gy/netease/order_result.html' % common.get_host_ip())
+        time.sleep(5)
         if driver.current_url != confirm_page_url:
             succ = True
         break
     print('We loop %d time(s)' % count)
-    driver.maximize_window()
-    result_shot = '%skl_order.png' % screen_path
-    driver.get_screenshot_as_file(result_shot)
-    print('URL to see make order result \nhttp://%s/pj/gy/netease/order_result.html' % common.get_host_ip())
     if succ:
         print('Success to make order')
     else:

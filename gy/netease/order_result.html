@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>kaola app store make order result</title>
+    <script type="text/javascript">
+        function listPng(){
+            var cnt = document.getElementById('count').value;
+            cnt++;
+            var img_range = document.getElementById('img_range');
+            while(img_range.hasChildNodes()){
+                img_range.removeChild(img_range.firstChild);
+            }
+            for(var i = 1; i < cnt; i++){
+                var one = document.createElement("img");
+                one.src="../../screen/kl_order" + i + ".png";
+                document.getElementById('img_range').appendChild(one);
+            }
+        }
+    </script>
 </head>
 <body>
+<div><span>请输入需要列出的图表数量</span><input type="text" name="count" value="10" onchange="listPng()" id="count"></div>
 <img src="../../screen/kl_order.png" alt="" id="img"/>
+<div id="img_range"></div>
 </body>
 </html>
