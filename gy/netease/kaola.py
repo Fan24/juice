@@ -96,15 +96,17 @@ def make_order(driver, product_url, face_value, discount, screen_path):
             continue
         print('Time at click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         driver.execute_script('''
-            document.getElementsByName('goods[0].tempBuyAmount')[1].value = 100;
-                document.getElementById('buyBtn').click();''')
+            document.getElementsByName('goods[0].tempBuyAmount')[1].value = arguments[0];
+                document.getElementById('buyBtn').click();''', 1)
         while product_url == driver.current_url:
             continue
         print('Time at after click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         confirm_page_url = driver.current_url
+        onsubmit_text = None
         for x in range(1, 10):
             current_price = float(driver.execute_script('''
                 console.info(orderInfo.goodsList[0].tempCurrentPrice);
+                console.info(document.getElementsByClassName('col3')[1].innerText);
                 return orderInfo.goodsList[0].tempCurrentPrice; 
             '''))
             if current_price > face_value * discount:
@@ -112,17 +114,68 @@ def make_order(driver, product_url, face_value, discount, screen_path):
                 continue
             try:
                 print('#%d--Time to click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
-                driver.execute_script('''
+                if onsubmit_text is None or onsubmit_text != '提交中...':
+                    onsubmit_text = driver.execute_script('''
                     console.info('before click confirm@' + new Date().toLocaleString());
                     document.getElementsByClassName('z-submitbtn')[0].click();
+                    console.info(document.getElementsByClassName('z-submitbtn')[0].innerText);
                     console.info('after click confirm@' + new Date().toLocaleString());
-                    ''')
-                print('%d--Time after click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+                    return document.getElementsByClassName('z-submitbtn')[0].innerText;
+                     ''')
+                    print('%d--Time after click confirm[%s]' % (x, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
                 driver.get_screenshot_as_file('%skl_order%d.png' % (screen_path, x))
                 if driver.current_url != confirm_page_url:
                     break
             except:
                 print('#d-confirm order fail' % x)
+        driver.maximize_window()
+        result_shot = '%skl_order.png' % screen_path
+        driver.get_screenshot_as_file(result_shot)
+        print('URL to see make order result \nhttp://%s/pj/gy/netease/order_result.html' % common.get_host_ip())
+        time.sleep(10)
+        if driver.current_url != confirm_page_url:
+            succ = True
+        break
+    print('We loop %d time(s)' % count)
+    if succ:
+        print('Success to make order')
+    else:
+        print('Unable to make order')
+    return succ
+
+
+def make_order2(driver, product_url, face_value, discount, screen_path):
+    count = 0
+    succ = False
+    driver.get(product_url)
+    print('Time at click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+    driver.execute_script('''
+            document.getElementsByName('goods[0].tempBuyAmount')[1].value = arguments[0];
+            document.getElementsByName('goods[0].tempBuyAmount')[0].value = arguments[0];
+            document.getElementById('buyBtn').click();''', 2)
+    while driver.current_url == product_url:
+        continue
+    while count < 20:
+        count = count + 1
+        confirm_page_url = driver.current_url
+        try:
+            price = float(driver.execute_script('''
+            return document.getElementsByClassName('col3')[1].innerText;
+            '''))
+            print('PRICE[%.2f], discount[%.2f]' % (price, discount))
+            if price > face_value * discount:
+                driver.refresh()
+                continue
+        except:
+            driver.refresh()
+            continue
+        print('Time to click confirm[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+        driver.execute_script('''
+                    console.info('before click confirm@' + new Date().toLocaleString());
+                    document.getElementsByClassName('z-submitbtn')[0].click();
+                    console.info('after click confirm@' + new Date().toLocaleString());
+                    ''')
+        print('Time after click confirm[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         driver.maximize_window()
         result_shot = '%skl_order.png' % screen_path
         driver.get_screenshot_as_file(result_shot)
@@ -174,12 +227,12 @@ try:
         "500" : "5287149",
         "200" : "5287147",
         "100": "5286150",
-        "50": "5286007True"
+        "50": "5286007"
     }
-    product_face = "100"
+    product_face = "200"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
     driver.get(app_store_product_url)
-    Common.block_until_start(False)
+    Common.block_until_start_by_second(False, 3, lambda: driver.refresh())
     discount = 0.95
     make_order(driver, app_store_product_url, int(product_face), discount, conf.get_screen_path())
 except:

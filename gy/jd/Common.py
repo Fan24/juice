@@ -129,13 +129,26 @@ def block_precise_until_start(quick):
             print(diff)
 
 
-def block_until_start_by_second(quick, sec_ahead):
+def block_until_start_by_second(quick, sec_ahead, observer=None):
     ct = datetime.datetime.now()
     st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour + 1)
     if quick:
-        st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, ct.second + 3)
+        second = ct.second + 3
+        if second > 59:
+            second = 59
+        st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, second)
     gap = math.floor((st - ct).total_seconds()) - sec_ahead
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
+    if gap <= 0:
+        return
+    distance = 5 * 60
+    ticker = 1
+    while gap > distance and observer is not None:
+        time.sleep(distance)
+        gap = math.floor((st - datetime.datetime.now()).total_seconds()) - sec_ahead
+        observer()
+        ticker = ticker + 1
+        print('%d# gap=%d--awake to see@%s' % (ticker, gap, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
     time.sleep(gap)
 
 
