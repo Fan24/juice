@@ -71,7 +71,7 @@ def login_if_logout(driver, userInfo, conf, type):
         try:
             driver.get(url)
         except:
-            print('log error')
+            print('log error@%s' % url)
             continue
         if driver.current_url.startswith(url):
             return True
@@ -88,16 +88,21 @@ def make_order(driver, product_url, face_value, discount, screen_path):
     while count < 10:
         count = count + 1
         driver.refresh()
-        price = float(driver.execute_script('''
+        price = 10000
+        try:
+            price = float(driver.execute_script('''
             return document.getElementsByName('goods[0].tempCurrentPrice')[0].value;
         '''))
+        except:
+            print('find price error')
+            continue
         print('PRICE[%.2f], discount[%.2f]' % (price, discount))
         if price > face_value * discount:
             continue
         print('Time at click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
         driver.execute_script('''
             document.getElementsByName('goods[0].tempBuyAmount')[1].value = arguments[0];
-                document.getElementById('buyBtn').click();''', 1)
+                document.getElementById('buyBtn').click();''', 2)
         while product_url == driver.current_url:
             continue
         print('Time at after click buyBtn[%s]' % (datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
@@ -229,7 +234,7 @@ try:
         "100": "5286150",
         "50": "5286007"
     }
-    product_face = "200"
+    product_face = "100"
     app_store_product_url = "https://goods.kaola.com/product/%s.html" % app_store_product_id[product_face]
     driver.get(app_store_product_url)
     Common.block_until_start_by_second(False, 3, lambda: driver.refresh())
