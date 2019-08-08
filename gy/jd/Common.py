@@ -112,14 +112,28 @@ def block_until_start(quick):
     block_until_start_by_second(quick, 2)
 
 
-def block_precise_until_start(quick):
+def block_precise_until_start(quick, observer=None):
     ct = datetime.datetime.now()
     st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour + 1)
     if quick:
-        st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, ct.second + 5)
+        sec = ct.second + 5
+        if sec > 60:
+            sec = 59
+        st = datetime.datetime(ct.year, ct.month, ct.day, ct.hour, ct.minute, sec)
     gap = math.floor((st - ct).total_seconds()) - 2
+    if gap < 0:
+        gap = 0
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
-    time.sleep(gap)
+    if gap > 2:
+        distance = 5 * 60
+        ticker = 1
+        while gap > distance and observer is not None:
+            time.sleep(distance)
+            observer()
+            gap = math.floor((st - datetime.datetime.now()).total_seconds()) - 2
+            ticker = ticker + 1
+            print('%d# gap=%d--awake to see@%s' % (ticker, gap, datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')))
+        time.sleep(gap)
     while True:
         ct = time.time()
         st_time = time.mktime(st.timetuple())
