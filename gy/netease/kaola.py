@@ -110,9 +110,10 @@ def make_order(driver, product_url, face_value, discount, screen_path):
         onsubmit_text = None
         try:
             current_price = float(driver.execute_script('''
-                console.info(orderInfo.goodsList[0].tempCurrentPrice);
-                console.info(document.getElementsByClassName('col3')[1].innerText);
-                return orderInfo.goodsList[0].tempCurrentPrice; '''))
+                var price = document.getElementsByClassName('col3')[1].innerText;
+                console.info(price);
+                return price;
+                '''))
             print('PRICE[%.2f], discount[%.2f]' % (current_price, discount))
             if current_price > face_value * discount:
                 continue
