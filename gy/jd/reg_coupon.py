@@ -10,7 +10,7 @@ import traceback
 
 conf = config.GyConfig()
 param = {
-    "activityUrl": "https://pro.m.jd.com/mall/active/u6gHEpQdnEZuJPf8ebCQqdJCs2V/index.html"
+    "activityUrl": "https://pro.m.jd.com/mall/active/2LCWjvsi7Rtnk5tERxedTAFvEk3Q/index.html"
 }
 
 
@@ -29,9 +29,9 @@ def visit_activity(driver, userInfo):
 
 def click_to_get(driver):
     command = list()
-    command.append('$(".coupon").eq(0).click()' % param['coupon_id'])
-    command.append('$(".coupon").eq(1).click()' % param['coupon_id'])
-    command.append('$(".coupon").eq(2).click()' % param['coupon_id'])
+    command.append('$(".coupon").eq(0).click()')
+    command.append('$(".coupon").eq(1).click()')
+    command.append('$(".coupon").eq(2).click()')
     for cmd in command:
         driver.execute_script(cmd)
         print(cmd)
