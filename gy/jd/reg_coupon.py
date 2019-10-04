@@ -20,7 +20,7 @@ def visit_activity(driver, userInfo):
     print('we are at', driver.current_url)
     driver.execute_script('$(".coupon").first().click()')
     time.sleep(5)
-    if driver.current_url.startswith('https://plogin.m.jd.com/user/login.action'):
+    if driver.current_url.startswith('https://plogin.m.jd.com/login/login'):
         Common.jd_login(driver, userInfo, conf)
     if driver.current_url.startswith(param['activityUrl']):
         return True
@@ -30,7 +30,7 @@ def visit_activity(driver, userInfo):
 def click_to_get(driver):
     command = list()
     driver.execute_script("window.scrollTo(0, 600)")
-    command.append('$(".coupon").eq(0).click()')
+    command.append('$(".coupon").(0).click()')
     command.append('$(".coupon").eq(1).click()')
     command.append('$(".coupon").eq(2).click()')
     time.sleep(1)
@@ -38,6 +38,13 @@ def click_to_get(driver):
         driver.execute_script(cmd)
         print(cmd)
     driver.get_screenshot_as_file('%sjd_coupon.png' % conf.get_screen_path())
+    driver.execute_script('''
+        for(var i = 0; i < 3; i++){
+            document.getElementsByClassName('coupon')[i].click();
+            }
+    ''')
+
+    driver.get_screenshot_as_file('%sjd_couponV2.png' % conf.get_screen_path())
     print(conf.get_screen_path())
     print('URL for clicking to get coupon PNG\nhttp://%s/pj/gy/jd/coupon_png.html' % common.get_host_ip())
     time.sleep(5)
@@ -119,7 +126,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
-        Common.block_precise_until_start(False)
+        Common.block_precise_until_start(True)
         click_to_get(driver)
         break
 except:

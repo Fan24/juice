@@ -56,13 +56,14 @@ def get_verfiy_code():
 def jd_login(driver, userInfo, conf):
     print('We are preparing to login')
     cnt = 0
-    while driver.current_url.startswith('https://plogin.m.jd.com/user/login.action'):
+    login_url = 'https://plogin.m.jd.com/login/login'
+    while driver.current_url.startswith(login_url):
         if cnt > 2:
             break;
         cnt += 1
         print('BeforeLogin#', cnt)
         time.sleep(1)
-    if driver.current_url.startswith('https://plogin.m.jd.com/user/login.action'):
+    if driver.current_url.startswith(login_url):
         driver.get_screenshot_as_file('%sbefore.png' % conf.get_screen_path())
         time.sleep(2)
         driver.find_element_by_id('username').send_keys(userInfo['username'])
@@ -125,7 +126,7 @@ def block_precise_until_start(quick, observer=None):
         gap = 0
     print('Here we @%s, activity start @%s, we sleep %d(s)' % (ct.strftime('%Y%m%d %H:%M:%S.%f'), st.strftime('%Y%m%d %H:%M:%S'), gap))
     if gap > 2:
-        distance = 5 * 60
+        distance = 2 * 60
         ticker = 1
         while gap > distance and observer is not None:
             time.sleep(distance)
