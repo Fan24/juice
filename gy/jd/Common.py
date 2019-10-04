@@ -70,7 +70,7 @@ def jd_login(driver, userInfo, conf):
         time.sleep(1)
         driver.find_element_by_id('pwd').send_keys(userInfo['password'])
         time.sleep(2)
-        driver.find_element_by_class_name('btn-active').click()
+        driver.find_element_by_class_name('.btn-active').click()
         time.sleep(5)
     try:
         captcha = driver.find_element_by_id('captcha_modal')
@@ -91,7 +91,6 @@ def jd_login(driver, userInfo, conf):
         time.sleep(5)
     except:
         print('not verify code')
-    input('pause')
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
         print('RiskUri:',driver.current_url)
         print(driver.page_source)

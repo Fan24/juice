@@ -388,7 +388,7 @@ try:
         driver.switch_to.window(driver.window_handles[0])
         get_real_phone_recharge(driver, faceValue, order_type, 9.95)
     else:
-        charge_money = 20
+        charge_money = 100
         ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
         operator_type = ot_array[1]
         get_charge_order(driver, charge_money, operator_type)

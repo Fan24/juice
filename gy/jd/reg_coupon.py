@@ -30,7 +30,7 @@ def visit_activity(driver, userInfo):
 def click_to_get(driver):
     command = list()
     driver.execute_script("window.scrollTo(0, 600)")
-    command.append('$(".coupon").(0).click()')
+    command.append('$(".coupon").eq(0).click()')
     command.append('$(".coupon").eq(1).click()')
     command.append('$(".coupon").eq(2).click()')
     time.sleep(1)
