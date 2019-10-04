@@ -70,14 +70,14 @@ def jd_login(driver, userInfo, conf):
         time.sleep(1)
         driver.find_element_by_id('pwd').send_keys(userInfo['password'])
         time.sleep(2)
-        driver.find_elements_by_class_name('btn-active').click()
+        driver.find_element_by_class_name('btn-active').click()
         time.sleep(5)
     try:
-        captcha = driver.find_element_by_id('captcha')
+        captcha = driver.find_element_by_id('captcha_modal')
         cap_file = '%scaptcha.png' % conf.get_screen_path()
         driver.get_screenshot_as_file(cap_file)
         print(cap_file)
-        code = driver.find_element_by_id('captcha')
+        code = driver.find_element_by_id('captcha_modal')
         left = int(code.location['x'])
         top = int(code.location['y'])
         right = int(code.location['x'] + code.size['width'])
@@ -91,19 +91,20 @@ def jd_login(driver, userInfo, conf):
         time.sleep(5)
     except:
         print('not verify code')
+    input('pause')
     if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
         print('RiskUri:',driver.current_url)
         print(driver.page_source)
         driver.find_element_by_class_name('.mode-btn.voice-mode').click()
         time.sleep(3)
-    if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/sms_risk'):
+    if driver.current_url.startswith('https://plogin.m.jd.com/h5/risk'):
         print('SmsUri:',driver.current_url)
         print(driver.page_source)
-        driver.find_element_by_id('getMesCode').click();
+        driver.find_element_by_class_name('getMsg-btn').click()
         sms = get_sms_code()
-        driver.find_element_by_id('authCode').send_keys(sms)
+        driver.find_element_by_class_name('msgCode').send_keys(sms)
         time.sleep(1)
-        driver.find_element_by_class_name('smsSubmit').click()
+        driver.find_element_by_class_name('btn').click()
         time.sleep(2)
     driver.get_screenshot_as_file('%safterLogin.png' % conf.get_screen_path())
     print('AfterLoginUrl@',driver.current_url)

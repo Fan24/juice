@@ -10,7 +10,7 @@ import traceback
 
 conf = config.GyConfig()
 param = {
-    "activityUrl": "https://pro.m.jd.com/mall/active/2LCWjvsi7Rtnk5tERxedTAFvEk3Q/index.html"
+    "activityUrl": "https://pro.m.jd.com/mall/active/4GVnfb7dq6rxqEM8NkoAFwLyGWjn/index.html"
 }
 
 
@@ -19,7 +19,7 @@ def visit_activity(driver, userInfo):
     driver.get(param['activityUrl'])
     print('we are at', driver.current_url)
     driver.execute_script('$(".coupon").first().click()')
-    time.sleep(5)
+    time.sleep(10)
     if driver.current_url.startswith('https://plogin.m.jd.com/login/login'):
         Common.jd_login(driver, userInfo, conf)
     if driver.current_url.startswith(param['activityUrl']):
@@ -126,7 +126,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
-        Common.block_precise_until_start(True)
+        Common.block_precise_until_start(False)
         click_to_get(driver)
         break
 except:
