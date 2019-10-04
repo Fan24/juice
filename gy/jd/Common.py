@@ -68,9 +68,9 @@ def jd_login(driver, userInfo, conf):
         time.sleep(2)
         driver.find_element_by_id('username').send_keys(userInfo['username'])
         time.sleep(1)
-        driver.find_element_by_id('password').send_keys(userInfo['password'])
+        driver.find_element_by_id('pwd').send_keys(userInfo['password'])
         time.sleep(2)
-        driver.find_element_by_id('loginBtn').click()
+        driver.find_elements_by_class_name('btn-active').click()
         time.sleep(5)
     try:
         captcha = driver.find_element_by_id('captcha')
