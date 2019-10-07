@@ -19,7 +19,7 @@ def visit_activity(driver, userInfo):
     print('go to ', param['activityUrl'])
     driver.get(param['activityUrl'])
     print('we are at', driver.current_url)
-    driver.execute_script('$(".coupon").first().click()')
+    driver.execute_script('$(".coupon").eq(1).click()')
     time.sleep(10)
     if driver.current_url.startswith('https://plogin.m.jd.com/login/login'):
         Common.jd_login(driver, userInfo, conf)
@@ -30,16 +30,22 @@ def visit_activity(driver, userInfo):
 
 def click_to_get(driver):
     command = list()
-    driver.execute_script("window.scrollTo(0, 600)")
     command.append('$(".coupon").eq(1).click()')
     command.append('$(".coupon").eq(0).click()')
     command.append('$(".coupon").eq(2).click()')
     time.sleep(2)
     print('Click to get coupon@%s' % datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'))
+    cnt = 0
     for cmd in command:
         driver.execute_script(cmd)
-        time.sleep(1)
+        driver.execute_script("window.scrollTo(0, 0)")
+        driver.execute_script("window.scrollTo(0, 600)")
+        path = '%sjd_coupon%d.png' % (conf.get_screen_path(), cnt)
+        driver.get_screenshot_as_file(path)
+        cnt = cnt + 1
+        time.sleep(2)
         print(cmd)
+        driver.refresh()
     shot_path = '%sjd_coupon.png' % conf.get_screen_path()
     driver.get_screenshot_as_file(shot_path)
     print(shot_path)
@@ -52,9 +58,9 @@ def get_act_key():
 
 
 def get_quick_flag(def_flag):
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         return def_flag
-    if sys.argv[1] == "true":
+    if sys.argv[2] == "true":
         return True
     return False
 
@@ -131,6 +137,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
+        driver.refresh()
         Common.block_precise_until_start(get_quick_flag(False))
         click_to_get(driver)
         break
