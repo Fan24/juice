@@ -5,6 +5,7 @@ from gy import config
 from gy.jd import Common
 from gy.util import common
 import time
+import sys
 import datetime
 import traceback
 
@@ -33,20 +34,29 @@ def click_to_get(driver):
     command.append('$(".coupon").eq(1).click()')
     command.append('$(".coupon").eq(0).click()')
     command.append('$(".coupon").eq(2).click()')
-    time.sleep(1)
+    time.sleep(2)
     print('Click to get coupon@%s' % datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f'))
     for cmd in command:
         driver.execute_script(cmd)
         time.sleep(1)
         print(cmd)
-    driver.get_screenshot_as_file('%sjd_coupon.png' % conf.get_screen_path())
-    print(conf.get_screen_path())
+    shot_path = '%sjd_coupon.png' % conf.get_screen_path()
+    driver.get_screenshot_as_file(shot_path)
+    print(shot_path)
     print('URL for clicking to get coupon PNG\nhttp://%s/pj/gy/jd/coupon_png.html' % common.get_host_ip())
     time.sleep(5)
 
 
 def get_act_key():
     return '2018101815415505201'
+
+
+def get_quick_flag(def_flag):
+    if len(sys.argv) < 2:
+        return def_flag
+    if sys.argv[1] == "true":
+        return True
+    return False
 
 
 def asyn_grap_prize(driver):
@@ -121,7 +131,7 @@ try:
         print('#%d to activity' % cnt)
         if not visit_activity(driver, userInfo):
             continue
-        Common.block_precise_until_start(False)
+        Common.block_precise_until_start(get_quick_flag(False))
         click_to_get(driver)
         break
 except:
