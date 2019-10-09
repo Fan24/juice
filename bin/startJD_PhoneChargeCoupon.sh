@@ -22,5 +22,9 @@ logDir="/home/ap/fan/OnionMall/log/"
 if [ "$1" ];then
 	userFn=$1
 fi
-nohup python -u $srcDir$pythonSrc $userFn> $logDir/JD_phone_charge_coupon_$userFn.log 2>&1 &
+quick=false
+if [ "$2" ];then
+	quick=$2
+fi
+nohup python -u $srcDir$pythonSrc $userFn $quick> $logDir/JD_phone_charge_coupon_$userFn.log 2>&1 &
 #python $srcDir$pythonSrc father.json
