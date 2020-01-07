@@ -47,7 +47,7 @@ def get_sign(str_data):
     return md5.hexdigest()
 
 
-def collect_order_info(elems, info_list):
+def collect_order_info(elems, info_list, wall_order_id):
     if elems is None or len(elems) == 0:
         return False
     found = 0
@@ -56,22 +56,13 @@ def collect_order_info(elems, info_list):
         price_elem = elem.find_element_by_xpath('../../../../td[2]')
         pay_money = price_elem.find_element_by_xpath('div/p[2]/span[2]').text
         face_value = price_elem.find_element_by_xpath('//del/span[2]').text
-        '''
-        while True:
-            cmd = input('input xpath')
-            try:
-                e1 = price_elem.find_element_by_xpath(cmd)
-                print(e1.text)
-                print(e1.get_attribute('data-reactid'))
-            except:
-                traceback.print_exc()
-        print(price_elem.find_element_by_xpath('//del').text)
-        print(price_elem.find_element_by_xpath('//span[-1]').text)
-        '''
         order = {'biz_order_id': biz_order_id, 'face_value' : face_value, 'pay_money' : pay_money}
         print('bizID:%s, face_vaule:%s, pay_money:%s' % (biz_order_id, face_value, pay_money))
         info_list.append(order)
         found = found + 1
+        if biz_order_id == wall_order_id:
+            print('we reach the last order id %s, which include to collect' % wall_order_id)
+            return False
     return True
 
 
@@ -116,7 +107,7 @@ def get_card_info(driver, biz_info):
         print('Unable to get order id[%s] card info' % (biz_info['biz_order_id']))
 
 
-def get_pc_order_list(driver):
+def get_pc_order_list(driver, wall_order_id):
     url = 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm'
     driver.get(url)
     time.sleep(2)
@@ -126,8 +117,10 @@ def get_pc_order_list(driver):
     while success_to_next_page:
         print('Go to page#%d' % page_no)
         elems = driver.find_elements_by_link_text('查看卡密')
-        if not collect_order_info(elems, biz_order_info_list):
-            cmd = input('Page #%d have no order, c for continue, other to quit' % page_no)
+        if not collect_order_info(elems, biz_order_info_list, wall_order_id):
+            cmd = "other"
+            if biz_order_info_list[len(biz_order_info_list) - 1]['biz_order_id'] != wall_order_id:
+                cmd = input('Page #%d have no order, c for continue, other to quit' % page_no)
             if cmd != "c":
                 break
         page_no = page_no + 1
@@ -188,21 +181,13 @@ def get_order_list_address(driver):
 def tb_login(driver):
     driver.get(param['buy_list_url'])
     input('please login')
+    driver.execute_script('window.open("https://www.baidu.com");')
+    driver.switch_to.window(driver.window_handles[1])
+    driver.get(param['m_home_url'])
+    time.sleep(2)
+    driver.close()
+    driver.switch_to.window(driver.window_handles[0])
     return True
-    '''
-    for cnt in range(1, 4):
-        print('#%s to login' % cnt)
-        try:
-            driver.get(param['m_home_url'])
-            WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, 'page-container')))
-            return True
-        except TimeoutException:
-            traceback.print_exc()
-            driver.get(param['home_url'])
-            input('Please login and press any key after login')
-            continue
-    return False
-    '''
 
 
 def cookies_transfer(driver):
@@ -241,7 +226,10 @@ try:
         exit(1)
     cookies_transfer(driver)
     #get_order_list_address(driver)
-    order_list = get_pc_order_list(driver)
+    #the last order id to search, if we reach this order id, the proccess will return to get card no
+    #include this order
+    wall_order_id = '803188450476796355'
+    order_list = get_pc_order_list(driver, wall_order_id)
     collect_card_info(driver, order_list)
 except:
     traceback.print_exc()
