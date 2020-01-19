@@ -64,6 +64,13 @@ def jd_login(driver, userInfo, conf):
         print('BeforeLogin#', cnt)
         time.sleep(1)
     if driver.current_url.startswith(login_url):
+        elem = driver.find_elements_by_class_name('planBLogin')
+        print(len(elem))
+        if len(elem) > 0 and elem[0].text != '短信验证码登录':
+            print(elem[0].text)
+            elem[0].click()
+            time.sleep(2)
+            print(elem[0].text)
         driver.get_screenshot_as_file('%sbefore.png' % conf.get_screen_path())
         time.sleep(2)
         driver.find_element_by_id('username').send_keys(userInfo['username'])
