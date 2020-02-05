@@ -228,7 +228,8 @@ try:
     #get_order_list_address(driver)
     #the last order id to search, if we reach this order id, the proccess will return to get card no
     #include this order
-    wall_order_id = '803188450476796355'
+    #wall_order_id = '828822691038164392'
+    wall_order_id = input('please input the last include order to collected')
     order_list = get_pc_order_list(driver, wall_order_id)
     collect_card_info(driver, order_list)
 except:

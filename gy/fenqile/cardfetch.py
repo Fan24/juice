@@ -39,8 +39,11 @@ def get_order_list(offset, limit, detail_urls, last_include_url, exclude_order_i
     if data_json['result'] == 0:
         rows = data_json['data']['result_rows']
         for i in rows:
-            du = i['order_info']['detail_url']
             order_id = i['order_info']['order_id']
+            if i['template_content'][0]['state_info']['state_desc'] == '已关闭':
+                print('CloseOrder:%s' % order_id)
+                continue
+            du = i['order_info']['detail_url']
             product_info = i['template_content'][1]['order_goods_info']['goods_info']['product_info']
             if exclude_order_id.get(order_id) == 1:
                 print('Exlucde order id: %s' % order_id)
@@ -99,6 +102,7 @@ def get_card_code(detail_urls):
     param = '''{"send_type":8,"sms_code":"%s","order_id":"%s","is_weex":1, "sale_type":800}'''
     code_count = 0
     sms_code = None
+    car_pool = []
     for detail in detail_urls:
         if code_count == 0:
             code_count = 5
@@ -113,7 +117,16 @@ def get_card_code(detail_urls):
         data = r.json()
         if data['retcode'] == 0:
             for info in data['virtual_info']['fulu_info']:
-                print('%s\t%s\t%s\t%s' % (info['card_number']['value'], info['passwd']['value'], detail['product_info'], detail['order_id']))
+                card_no = info.get('card_number')
+                if card_no is not None:
+                    card_no = info['card_number']['value']
+                else:
+                    card_no = ""
+                print('%s\t%s\t%s\t%s' % (card_no, info['passwd']['value'], detail.get('product_info'), detail.get('order_id')))
+                car_pool.append({'OrderID' : detail['order_id'],
+                                 'OrderInfo' : detail.get('product_info'),
+                                 'CardNo' : card_no,
+                                 'CardPw' : info['passwd']['value']})
         elif data['retcode'] == 70023016:
             print(data)
             code_count = code_count + 1
@@ -123,6 +136,9 @@ def get_card_code(detail_urls):
         if code_count == 0:
             print('Waiting to get next sms code')
             time.sleep(55)
+    for cp in car_pool:
+        print('%s\t%s\t%s\t%s' % (cp['OrderID'], cp['OrderInfo'], cp['CardNo'], cp['CardPw']))
+    print('Total:%d' % (len(car_pool)))
 
 
 def get_sms():
@@ -166,7 +182,7 @@ try:
     detail_urls = []
     limit = 10
     offset = 0
-    last_include_url = 'https://trade.m.fenqile.com/order/detail/O20191128597844203626.html'
+    last_include_url = 'https://trade.m.fenqile.com/order/detail/O20200205695915103626.html'
     while get_order_list(offset, limit, detail_urls, last_include_url, exclude_order_id):
         offset = offset + limit
     print(len(detail_urls))
