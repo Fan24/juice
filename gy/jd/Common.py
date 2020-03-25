@@ -101,8 +101,8 @@ def jd_login(driver, userInfo, conf):
             driver.current_url.startswith('https://plogin.m.jd.com/h5/risk'):
         print('RiskUri:',driver.current_url)
         print(driver.page_source)
-        driver.execute_script('$(".mode-btn.voice-mode").click();')
-        #driver.find_element_by_class_name('.mode-btn.voice-mode').click()
+        #driver.execute_script('$(".mode-btn.voice-mode").click();')
+        driver.find_element_by_class_name('mode-btn').click()
         time.sleep(3)
     if driver.current_url.startswith('https://plogin.m.jd.com/h5/risk'):
         print('SmsUri:',driver.current_url)
