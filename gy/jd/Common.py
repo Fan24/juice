@@ -65,7 +65,6 @@ def jd_login(driver, userInfo, conf):
         time.sleep(1)
     if driver.current_url.startswith(login_url):
         elem = driver.find_elements_by_class_name('planBLogin')
-        print(len(elem))
         if len(elem) > 0 and elem[0].text != '短信验证码登录':
             print(elem[0].text)
             elem[0].click()
@@ -98,10 +97,12 @@ def jd_login(driver, userInfo, conf):
         time.sleep(5)
     except:
         print('not verify code')
-    if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk'):
+    if driver.current_url.startswith('https://plogin.m.jd.com/cgi-bin/ml/risk') or\
+            driver.current_url.startswith('https://plogin.m.jd.com/h5/risk'):
         print('RiskUri:',driver.current_url)
         print(driver.page_source)
-        driver.find_element_by_class_name('.mode-btn.voice-mode').click()
+        driver.execute_script('$(".mode-btn.voice-mode").click();')
+        #driver.find_element_by_class_name('.mode-btn.voice-mode').click()
         time.sleep(3)
     if driver.current_url.startswith('https://plogin.m.jd.com/h5/risk'):
         print('SmsUri:',driver.current_url)
