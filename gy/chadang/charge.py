@@ -73,6 +73,12 @@ def kaola_do_order(driver, phone):
     #cmd = input('input y to pay with this order')
     cmd = "y"
     if cmd == "y":
+        '''
+        $(".am-icon-arrow-horizontal")[1].click()
+
+https://mclient.alipay.com/h5/cashierSwitchChannel.htm
+$(".am-list-flat-chip").children().eq(0).click()
+        '''
         driver.find_element_by_id('cashierPreConfirm').submit()
         time.sleep(1)
         pwd = [8,0,2,0,7,0]
@@ -81,7 +87,8 @@ def kaola_do_order(driver, phone):
             time.sleep(0.3)
         time.sleep(2)
         print('wait to pay success')
-        while not driver.current_url.startswith('https://tradenj.kaola.com/order/pay_success.html'):
+        while not driver.current_url.startswith('https://tradenj.kaola.com/order/pay_success.html') \
+                and not driver.current_url.startswith('https://m-buy.kaola.com/order/pay_success.html'):
             time.sleep(2)
         driver.close()
     return True
@@ -194,6 +201,21 @@ def get_order(driver, param):
     return {'code':code, 'chargePhone': phone}
 
 
+def get_sepecial_job(driver, face_values, jsession):
+    pool_url = 'http://api.chadan.wang/order/specialOrderPool?JSESSIONID=%s' % jsession
+    driver.get(pool_url)
+    try:
+        pool = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except:
+        print('Can not get pool', driver.page_source)
+        traceback.print_exc()
+        return {'code': -3}
+    if pool['errorCode'] != 200:
+        return {'code': -1}
+
+    return {'code': -2}
+
+
 def get_job(driver, charge_type, oper_type,jsession):
     """
         get order form chadang
@@ -223,10 +245,17 @@ def get_job(driver, charge_type, oper_type,jsession):
 
 def login(driver, user_info):
     print('Login@',driver.current_url)
+    pre_url = driver.current_url
     driver.find_element_by_id('account').send_keys(user_info['username'])
+    driver.find_element_by_id('password').clear()
     driver.find_element_by_id('password').send_keys(user_info['password'])
+
     driver.execute_script('$("#loginButton").trigger("touchstart")')
-    time.sleep(5)
+    count = 0
+    while pre_url == driver.current_url:
+        count = count + 1
+        print('wait %d' % count)
+        time.sleep(5)
     print('After login page@', driver.current_url)
 
 
@@ -255,6 +284,12 @@ def confirm_order(driver, charge_phone, jession):
     print(qry_result)
 
     return False
+
+
+def get_sepcail_order(driver, face_value):
+    cnt = 0
+    sec = 3
+    jsession = driver.get_cookies('logged')['value']
 
 
 def get_charge_order(driver, charge_money, operator_type):
@@ -342,6 +377,76 @@ def get_qr_order(driver, amount, operator_type):
             break
 
 
+def get_jd_order(driver, logged):
+    productId = 8
+    shopId = 72
+    amount = 1
+    cardType = 1
+    shopName = '京东话费'
+    url = 'http://api.chadan.cn/order/other/getJdOtherOrder?JSESSIONID=%s&productId=%d&amount=%d&cardType=%d' \
+          '&shopName=%s&shopId=%d' % (logged, productId, amount, cardType, shopName, shopId)
+    driver.get(url)
+    try:
+        order_info = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+    except:
+        print('Can not get jd phone charge order', driver.page_source)
+        traceback.print_exc()
+        return {'code': -3}
+    print(order_info)
+    if order_info['errorCode'] == 2029:
+        return {'code': '-1', 'msg': order_info['errorMsg']}
+    elif order_info['errorCode'] == 200:
+        return {'code' : 0, 'msg' : 'SUCCESS', 'phoneNo' : order_info['data'][0]['cardNumber'],
+                'id' : order_info['data'][0]['id']}
+    else:
+        return {'code': '-2', 'msg' : order_info['errorMsg']}
+
+
+def report_jd_phonecharge2success(driver, logged, id):
+    succOrderStatus = 3
+    cardType =12
+    url = 'http://api.chadan.cn/order/other/reportJdHf?JSESSIONID=%s&id=%s&orderStatus=%d&cardType=%d' % \
+          (logged, id, succOrderStatus, cardType)
+    driver.get(url)
+    try:
+        result = json.loads(driver.find_element_by_xpath('/html/body/pre').text)
+        if result['errorCode'] == 200:
+            print('report order %d, success' % id)
+            return True
+    except:
+        print(driver.page_source)
+        print('report order to success with order id[%d] fail, please report manually' % id)
+        traceback.print_exc()
+        input('press any to continue')
+        return False
+
+
+def get_jd_phone(driver):
+    cnt = 0
+    sec = 3
+    logged = driver.get_cookie('logged')['value']
+    complete_order_counter = 0
+    while True:
+        cnt = cnt + 1
+        result = get_jd_order(driver, logged)
+        if result['code'] == 201:
+            print('Pool empty, sleep 1 minute')
+            time.sleep(60)
+            continue
+        if result['code'] != 0:
+            print('#%d can not make order:%s.Sleep %d(s)' % (cnt, result['msg'], sec))
+            time.sleep(sec)
+            continue
+        complete_order_counter = complete_order_counter + 1
+        print('#%d make order ' % cnt)
+        print('Order id:%d, phone to charge:%s' % (result['id'], result['phoneNo']))
+        cmd = input('Input n when you are ready to get next, other else will be exit')
+        report_jd_phonecharge2success(driver, logged, result['id'])
+        if cmd != "n":
+            break
+    print('We have completed %d orders totally' % complete_order_counter)
+
+
 chrome_options = Options()
 conf = config.GyConfig()
 if conf.is_headless():
@@ -364,10 +469,11 @@ else:
 
 driver.set_window_size(640, 700)
 try:
+    print('Env prepared')
     user_info = conf.get_user_info()
     go_dashboard(driver, user_info)
-    order_type_list = ["QR", "MBL_CHRG", "PHN_RECH", "KAO_LA"];
-    order_type = order_type_list[1]
+    order_type_list = ["QR", "MBL_CHRG", "PHN_RECH", "KAO_LA", "SEPCIAL_ORDER", "JD"];
+    order_type = order_type_list[5]
     if order_type == "QR":
         print('Go to get QR order')
         amount = 500
@@ -379,6 +485,7 @@ try:
     elif order_type == "KAO_LA":
         faceValue_Array = [50, 100, 200, 300, 500]
         faceValue = [faceValue_Array[0], faceValue_Array[1]]
+        faceValue = [faceValue_Array[0]]
         driver.execute_script('window.open("https://www.baidu.com");')
         time.sleep(1)
         driver.switch_to.window(driver.window_handles[1])
@@ -387,7 +494,14 @@ try:
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
         get_real_phone_recharge(driver, faceValue, order_type, 9.95)
+    elif order_type == "SEPCIAL_ORDER":
+        faceValue_Array = [10, 20, 30, 50, 100, 200, 300, 500]
+        #faceValue = [faceValue_Array[0], faceValue_Array[1]]
+        faceValue = [faceValue_Array[0]]
+    elif order_type == "JD":
+        get_jd_phone(driver)
     else:
+
         charge_money = 100
         ot_array = [None, "MOBILE", "UNICOM", "TELECOM"]
         operator_type = ot_array[1]

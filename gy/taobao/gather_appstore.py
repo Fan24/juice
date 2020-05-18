@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from requests.cookies import RequestsCookieJar
@@ -47,15 +48,46 @@ def get_sign(str_data):
     return md5.hexdigest()
 
 
+def find_face_value(elem):
+    try:
+        return elem.find_element_by_xpath('td[2]//del/span[2]').text
+    except:
+        return elem.find_element_by_xpath('td[5]//span[2]').text
+
+
+def find_pay_money(elem):
+    len_span = 2
+    while len_span > 0:
+        try:
+            return elem.find_element_by_xpath('div/p/span[%d]' % len_span).text
+        except:
+            print('PayMoneyEx:', len)
+        len_span = len_span - 1
+    return 'NA'
+
+
 def collect_order_info(elems, info_list, wall_order_id):
     if elems is None or len(elems) == 0:
         return False
     found = 0
     for elem in elems:
         biz_order_id = re.search('bizOrderId=(\d+)?&', elem.get_attribute('href')).group(1)
-        price_elem = elem.find_element_by_xpath('../../../../td[2]')
-        pay_money = price_elem.find_element_by_xpath('div/p[2]/span[2]').text
-        face_value = price_elem.find_element_by_xpath('//del/span[2]').text
+        tr_elem = elem.find_element_by_xpath('../../../..')
+        '''
+        while True:
+            path = input('path to debug')
+            try:
+                print(tr_elem.find_element_by_xpath(path).text)
+            except:
+                print(1111)
+            if path == "c":
+                break
+                '''
+        price_elem = tr_elem.find_element_by_xpath('td[2]')
+        pay_money = find_pay_money(price_elem)
+        #face_value = price_elem.find_element_by_xpath('//del/span[2]').text
+        #face_value = tr_elem.find_element_by_xpath('td[5]//span[2]').text
+        face_value = find_face_value(tr_elem)
         order = {'biz_order_id': biz_order_id, 'face_value' : face_value, 'pay_money' : pay_money}
         print('bizID:%s, face_vaule:%s, pay_money:%s' % (biz_order_id, face_value, pay_money))
         info_list.append(order)
@@ -179,6 +211,7 @@ def get_order_list_address(driver):
 
 
 def tb_login(driver):
+    #driver.get('https://taobao.com')
     driver.get(param['buy_list_url'])
     input('please login')
     driver.execute_script('window.open("https://www.baidu.com");')
@@ -198,7 +231,7 @@ def cookies_transfer(driver):
 
 
 userInfo = conf.get_user_info()
-chrome_options = Options()
+chrome_options = ChromeOptions()
 if conf.is_headless():
     chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-web-security')
@@ -211,6 +244,7 @@ chrome_options.add_argument('--user-data-dir=%s' % conf.get_chrome_user_dir())
 print('chrome user path:%s' % conf.get_chrome_user_dir())
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
 if conf.get_http_proxy():
     chrome_options.add_argument('--proxy-server=%s' % conf.get_http_proxy())
 
@@ -219,7 +253,7 @@ if conf.get_chrome_executable_path():
 else:
     driver = webdriver.Chrome(options=chrome_options)
 
-driver.set_window_size(640, 900)
+driver.set_window_size(900, 900)
 try:
     if not tb_login(driver):
         print('Login FAIL, exit')

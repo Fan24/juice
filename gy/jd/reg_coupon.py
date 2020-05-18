@@ -11,7 +11,7 @@ import traceback
 
 conf = config.GyConfig()
 param = {
-    "activityUrl": "https://pro.m.jd.com/mall/active/3F6ihniTmTJ5mer8LSeoYyzyuvGR/index.html"
+    "activityUrl": "https://pro.m.jd.com/mall/active//index.html"
 }
 
 
@@ -19,6 +19,7 @@ def visit_activity(driver, userInfo):
     print('go to ', param['activityUrl'])
     driver.get(param['activityUrl'])
     print('we are at', driver.current_url)
+    time.sleep(5)
     driver.execute_script('$(".coupon").first().click()')
     time.sleep(10)
     if driver.current_url.startswith('https://plogin.m.jd.com/login/login'):

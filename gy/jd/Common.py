@@ -15,7 +15,7 @@ def get_sms_code():
     while True:
         try:
             if os.path.getmtime(os.environ.get('VERIFY_CODE')) < curr_time:
-                print('please input verify code from', os.environ.get('VERIFY_CODE'))
+                print('please input sms verify code from', os.environ.get('VERIFY_CODE'))
                 time.sleep(5)
                 continue
             with open(os.environ.get('VERIFY_CODE')) as fp:
@@ -109,6 +109,7 @@ def jd_login(driver, userInfo, conf):
         print(driver.page_source)
         driver.find_element_by_class_name('getMsg-btn').click()
         sms = get_sms_code()
+        print(sms)
         driver.find_element_by_class_name('msgCode').send_keys(sms)
         time.sleep(1)
         driver.find_element_by_class_name('btn').click()
@@ -147,7 +148,7 @@ def block_precise_until_start(quick, observer=None):
         ct = time.time()
         st_time = time.mktime(st.timetuple())
         diff = (st_time - ct) * 1000
-        if diff < 300:
+        if diff < 10:
             break
             print(diff)
 
