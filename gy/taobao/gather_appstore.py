@@ -52,16 +52,16 @@ def find_face_value(elem):
     try:
         return elem.find_element_by_xpath('td[2]//del/span[2]').text
     except:
-        return elem.find_element_by_xpath('td[5]//span[2]').text
+        return elem.find_element_by_xpath('td[2]//span[2]').text
 
 
 def find_pay_money(elem):
     len_span = 2
     while len_span > 0:
         try:
-            return elem.find_element_by_xpath('div/p/span[%d]' % len_span).text
+            return elem.find_element_by_xpath('td[5]/div/div').text[1:]
         except:
-            print('PayMoneyEx:', len)
+            print('PayMoneyEx:', len_span)
         len_span = len_span - 1
     return 'NA'
 
@@ -82,12 +82,9 @@ def collect_order_info(elems, info_list, wall_order_id):
                 print(1111)
             if path == "c":
                 break
-                '''
-        price_elem = tr_elem.find_element_by_xpath('td[2]')
-        pay_money = find_pay_money(price_elem)
-        #face_value = price_elem.find_element_by_xpath('//del/span[2]').text
-        #face_value = tr_elem.find_element_by_xpath('td[5]//span[2]').text
+        '''
         face_value = find_face_value(tr_elem)
+        pay_money = find_pay_money(tr_elem)
         order = {'biz_order_id': biz_order_id, 'face_value' : face_value, 'pay_money' : pay_money}
         print('bizID:%s, face_vaule:%s, pay_money:%s' % (biz_order_id, face_value, pay_money))
         info_list.append(order)
