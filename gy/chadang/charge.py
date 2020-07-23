@@ -315,6 +315,8 @@ def loop_until_reported(driver, order_id, jsession, phone_no):
     url_pattern = 'http://api.chadan.cn/order/other/queryOtherOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=6&cardType=1' \
                     '&operator=MOBILE_BILL&JSESSIONID=%s'
     check_counter = 0
+    max_retry = 10
+    error_strike = 0
     while True:
         try:
             time2rest = 5
@@ -322,18 +324,22 @@ def loop_until_reported(driver, order_id, jsession, phone_no):
                 time2rest = 10
             time.sleep(time2rest)
             check_counter = check_counter + 1
-            print('#%d to check order status with phone no[%d]' % (check_counter, phone_no))
+            print('#%d to check order status with phone no[%s]' % (check_counter, phone_no))
             today = datetime.datetime.now().strftime('%Y-%m-%d')
             check_url = url_pattern % (today, today, jsession)
             driver.get(check_url)
             pool = json.loads(driver.find_element_by_xpath('html/body/pre').text)
             if pool['data']['total'] == 0:
                 print('Order[%d] has reported, try an other one' % order_id)
+                error_strike = 0
                 break
         except:
             print('Unable to check order status')
+            error_strike = error_strike + 1
             traceback.print_exc()
-
+            if error_strike >= max_retry:
+                print('Reach max strike error %d' % error_strike)
+                break
 
 
 def has_qr_job(driver, amount, operator_type):
