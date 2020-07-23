@@ -311,6 +311,31 @@ def get_charge_order(driver, charge_money, operator_type):
         time.sleep(sec)
 
 
+def loop_until_reported(driver, order_id, jsession, phone_no):
+    url_pattern = 'http://api.chadan.cn/order/other/queryOtherOrders?startTime=%s 00:00:00&endTime=%s 23:59:59&orderStatus=6&cardType=1' \
+                    '&operator=MOBILE_BILL&JSESSIONID=%s'
+    check_counter = 0
+    while True:
+        try:
+            time2rest = 5
+            if check_counter < 3:
+                time2rest = 10
+            time.sleep(time2rest)
+            check_counter = check_counter + 1
+            print('#%d to check order status with phone no[%d]' % (check_counter, phone_no))
+            today = datetime.datetime.now().strftime('%Y-%m-%d')
+            check_url = url_pattern % (today, today, jsession)
+            driver.get(check_url)
+            pool = json.loads(driver.find_element_by_xpath('html/body/pre').text)
+            if pool['data']['total'] == 0:
+                print('Order[%d] has reported, try an other one' % order_id)
+                break
+        except:
+            print('Unable to check order status')
+            traceback.print_exc()
+
+
+
 def has_qr_job(driver, amount, operator_type):
     pool_url = 'http://chadan.wang/order/payForAnotherOrderPooldd623299?JSESSIONID=%s' % driver.get_cookie('logged')['value']
     driver.get(pool_url)
@@ -398,6 +423,8 @@ def get_jd_order(driver, logged):
     elif order_info['errorCode'] == 200:
         return {'code' : 0, 'msg' : 'SUCCESS', 'phoneNo' : order_info['data'][0]['cardNumber'],
                 'id' : order_info['data'][0]['id']}
+    elif order_info['errorCode'] == 201:
+        return {'code' : 201, 'msg' : order_info['errorMsg']}
     else:
         return {'code': '-2', 'msg' : order_info['errorMsg']}
 
@@ -426,12 +453,20 @@ def get_jd_phone(driver):
     sec = 3
     logged = driver.get_cookie('logged')['value']
     complete_order_counter = 0
-    while True:
+    order2get = 100
+    order2get = int(input('Please input the number of orders to get, 0 for 1000'))
+    if order2get <= 0:
+        order2get = 1000
+    while order2get > complete_order_counter:
         cnt = cnt + 1
         result = get_jd_order(driver, logged)
         if result['code'] == 201:
             print('Pool empty, sleep 1 minute')
             time.sleep(60)
+            continue
+        if result['code'] == -3:
+            print('Unknow error, slepp 10 seconds to cotinues')
+            time.sleep(10)
             continue
         if result['code'] != 0:
             print('#%d can not make order:%s.Sleep %d(s)' % (cnt, result['msg'], sec))
@@ -440,10 +475,14 @@ def get_jd_phone(driver):
         complete_order_counter = complete_order_counter + 1
         print('#%d make order ' % cnt)
         print('Order id:%d, phone to charge:%s' % (result['id'], result['phoneNo']))
+        loop_until_reported(driver, result['id'], logged, result['phoneNo'])
+        print('We have killed %d of order(s). Total:%d' % (complete_order_counter, order2get))
+        '''
         cmd = input('Input n when you are ready to get next, other else will be exit')
         report_jd_phonecharge2success(driver, logged, result['id'])
         if cmd != "n":
             break
+        '''
     print('We have completed %d orders totally' % complete_order_counter)
 
 
@@ -451,7 +490,7 @@ chrome_options = Options()
 conf = config.GyConfig()
 if conf.is_headless():
     chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-web-security')
+#chrome_options.add_argument('--disable-web-security')
 chrome_options.add_argument(
     'user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"')
 chrome_options.add_argument('--lang=zh-CN.UTF-8')
