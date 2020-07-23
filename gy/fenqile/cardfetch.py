@@ -9,6 +9,7 @@ import json
 import traceback
 import requests
 
+
 conf = config.GyConfig()
 param = {
     "order_list_url": "https://order.m.fenqile.com/index.html#/order/list?type=all"
@@ -59,15 +60,20 @@ def get_order_list(offset, limit, detail_urls, last_include_url, exclude_order_i
 
 
 def fql_login(driver):
+    get_sms_code = False
     for cnt in range(1, 4):
         print('#%s to login' % cnt)
         driver.get(param['order_list_url'])
         time.sleep(2)
         if driver.current_url.startswith(param['order_list_url']):
             print('Login success!')
+            if get_sms_code:
+                print('Sleep 60(s) before get sms code')
+                time.sleep(60)
             return True
         while not driver.current_url.startswith(param['order_list_url']):
             print('please login')
+            get_sms_code = True
             time.sleep(5)
     return False
 
@@ -103,12 +109,16 @@ def get_card_code(detail_urls):
     code_count = 0
     sms_code = None
     car_pool = []
+    get_sms_time = time.time()
+    last_url = detail_urls[-1]
     for detail in detail_urls:
         if code_count == 0:
             code_count = 5
             sms_code = get_sms()
+            get_sms_time = time.time()
             if sms_code is None:
                 sms_code = input('Please input sms manually')
+                get_sms_time = time.time()
         code_count = code_count - 1
         print('----%s' % detail['detail_url'])
         time.sleep(3)
@@ -122,20 +132,28 @@ def get_card_code(detail_urls):
                     card_no = info['card_number']['value']
                 else:
                     card_no = ""
-                print('%s\t%s\t%s\t%s' % (card_no, info['passwd']['value'], detail.get('product_info'), detail.get('order_id')))
+                card_pw = info.get('passwd')
+                if card_pw is not None:
+                    card_pw = info['passwd']['value']
+                else:
+                    card_pw = ""
+                print('%s\t%s\t%s\t%s' % (card_no, card_pw, detail.get('product_info'), detail.get('order_id')))
                 car_pool.append({'OrderID' : detail['order_id'],
                                  'OrderInfo' : detail.get('product_info'),
                                  'CardNo' : card_no,
-                                 'CardPw' : info['passwd']['value']})
+                                 'CardPw' : card_pw})
         elif data['retcode'] == 70023016:
             print(data)
             code_count = code_count + 1
             sms_code = input('sms code error please input correct sms code')
         else:
             print(data)
-        if code_count == 0:
-            print('Waiting to get next sms code')
-            time.sleep(55)
+        if code_count == 0 and last_url != detail:
+            sec_to_sleep = time.time() - get_sms_time
+            sec_to_sleep = 60 - sec_to_sleep
+            print('Waiting to get next sms code, progress:%d/%d' % (len(car_pool), len(detail_urls)))
+            print('We will sleep %d(s)' % int(sec_to_sleep))
+            time.sleep(sec_to_sleep)
     for cp in car_pool:
         print('%s\t%s\t%s\t%s' % (cp['OrderID'], cp['OrderInfo'], cp['CardNo'], cp['CardPw']))
     print('Total:%d' % (len(car_pool)))
@@ -182,7 +200,9 @@ try:
     detail_urls = []
     limit = 10
     offset = 0
-    last_include_url = 'https://trade.m.fenqile.com/order/detail/O20200205695915103626.html'
+    memo = {'2423':'O20200525289842309914', '5913': 'O20200602145673103626'}
+    last_order_id = input('Please input last order id to get')
+    last_include_url = 'https://trade.m.fenqile.com/order/detail/%s.html' % last_order_id
     while get_order_list(offset, limit, detail_urls, last_include_url, exclude_order_id):
         offset = offset + limit
     print(len(detail_urls))

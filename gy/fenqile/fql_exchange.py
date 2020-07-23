@@ -59,14 +59,20 @@ def get_exchange_codes():
     return exchange_codes
 
 
-def get_card_info(exchange_code, des):
+def collect_card_info(exchange_code, des, face_value, card_package):
     pwd = base64_encode(encrytDes(des, exchange_code))
+    product_ids = {'100': '18001364', '500': '18001293', '1000' : '18001362', '100*10' : '18001365'}
+    url_pattern = 'cardExchangeOrder'
+    if face_value == '100*10':
+        url_pattern = 'cardCamiloPackage'
+    post_target = 'https://11888pay.cn/exchange/%s' % url_pattern
+    print(post_target)
     while True:
-        r = s.post('https://11888pay.cn/exchange/cardExchangeOrder', data={'productId': '18001293','cardPwd': pwd, 'flag': 'fenqile'})
+        r = s.post(post_target, data={'productId': product_ids[face_value], 'cardPwd': pwd, 'flag': 'fenqile'})
         print(exchange_code, r.text)
         res = r.json()
         if res.get('errorCode') == 5121:
-            sec_to_sleep = 20
+            sec_to_sleep = 60
             print('Time to sleep for %d(s)' % sec_to_sleep)
             time.sleep(sec_to_sleep)
             continue
@@ -84,8 +90,9 @@ def get_card_info(exchange_code, des):
             card_passwd = row['cardPwd']
             card_info = row['productName']
             print('%s\t%s\t%s' % (card_no, card_passwd, card_info))
-            return {'card_no': card_no, 'card_pw': card_passwd, 'card_info': card_info,
-                    'exchange_code': exchange_code, 'encryt_ex_code': pwd, 'code' : 0}
+            card_package.append({'card_no': card_no, 'card_pw': card_passwd, 'card_info': card_info,
+                    'exchange_code': exchange_code, 'encryt_ex_code': pwd})
+        return {'code' : 0}
     else:
         print('could not find exchage code %s exchange info' % exchange_code)
         print(r.text)
@@ -102,10 +109,15 @@ print('We find %d of exchange code' % len(exchange_codes))
 if len(exchange_codes) == 0:
     exit(0)
 card_infos = []
+face_value = '500*4'
+ind = 0
 for ex in exchange_codes:
-    card_info = get_card_info(ex, des)
-    if card_info['code'] == 0:
-        card_infos.append(card_info)
+    ind = ind + 1
+    print('Progess %d/%d' % (ind, len(exchange_codes)))
+    if ind % 10 == 0:
+        print('Sleep 60 sec')
+        time.sleep(60)
+    collect_card_info(ex, des, face_value, card_infos)
     time.sleep(1)
 print('Total exchange %d' % len(card_infos))
 print('Total exchange code from file %d' % len(exchange_codes))
