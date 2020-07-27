@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from gy import config
 import time
+from requests.cookies import RequestsCookieJar
 import logging
 import json
 import traceback
@@ -23,7 +24,6 @@ requests_log = logging.getLogger("urllib3")
 requests_log.setLevel(logging.DEBUG)
 requests_log.propagate = True
 '''
-
 
 def inital_des():
     key = b'qAfmGitJ'
@@ -59,6 +59,12 @@ def get_exchange_codes():
     return exchange_codes
 
 
+def check_card_status(pwd):
+    url = 'http://11888pay.cn/exchange/checkCardStatus'
+    r = s.post(url, data={'userId': 452, 'cardPwd' :pwd, 'flag': 'fenqile'})
+    return r.json()
+
+
 def collect_card_info(exchange_code, des, face_value, card_package):
     pwd = base64_encode(encrytDes(des, exchange_code))
     product_ids = {'100': '18001364', '500': '18001293', '1000' : '18001362', '100*10' : '18001365'}
@@ -68,6 +74,10 @@ def collect_card_info(exchange_code, des, face_value, card_package):
     post_target = 'https://11888pay.cn/exchange/%s' % url_pattern
     print(post_target)
     while True:
+        if check_card_status(pwd)['errorCode'] == 5104:
+            print('Card exchanged')
+            break
+        time.sleep(3)
         r = s.post(post_target, data={'productId': product_ids[face_value], 'cardPwd': pwd, 'flag': 'fenqile'})
         print(exchange_code, r.text)
         res = r.json()
@@ -79,7 +89,7 @@ def collect_card_info(exchange_code, des, face_value, card_package):
         if res.get('errorCode') == 5000 or res.get('errorCode') == 5104:
             break
         print('Unable to active exchage code %s' % exchange_code)
-        return {'code' : -2}
+        break
     url = 'https://11888pay.cn/exchange/orderList'
     r = s.post(url, data={'pageNumber': 1, 'pageSize' : 9999, 'cardPwd': pwd, 'flag' : 'fenqile'})
     print(r.json())
@@ -100,6 +110,10 @@ def collect_card_info(exchange_code, des, face_value, card_package):
 
 
 s = requests.Session()
+cookie_jar = RequestsCookieJar()
+cookie_jar.set('SESSION', '', domain='11888pay.cn')
+s.cookies.update(cookie_jar)
+print(s.cookies)
 des = inital_des()
 encData = base64_encode(encrytDes(des, "VXMH7YVZ67654UU7"))
 assert "SKVB4sf5cQ6PDZPXav1Wucc91byuoQx2" == encData
@@ -109,7 +123,7 @@ print('We find %d of exchange code' % len(exchange_codes))
 if len(exchange_codes) == 0:
     exit(0)
 card_infos = []
-face_value = '500*4'
+face_value = '500'
 ind = 0
 for ex in exchange_codes:
     ind = ind + 1
