@@ -67,9 +67,9 @@ def check_card_status(pwd):
 
 def collect_card_info(exchange_code, des, face_value, card_package):
     pwd = base64_encode(encrytDes(des, exchange_code))
-    product_ids = {'100': '18001364', '500': '18001293', '1000' : '18001362', '100*10' : '18001365'}
+    product_ids = {'100': '18001364', '500': '18001293', '1000' : '18001362', '100*10' : '18001365', '1000*2' : '18001641', '500*4': '18001688'}
     url_pattern = 'cardExchangeOrder'
-    if face_value == '100*10':
+    if face_value == '100*10' or face_value == '1000*2' or face_value == '500*4':
         url_pattern = 'cardCamiloPackage'
     post_target = 'https://11888pay.cn/exchange/%s' % url_pattern
     print(post_target)
@@ -123,7 +123,7 @@ print('We find %d of exchange code' % len(exchange_codes))
 if len(exchange_codes) == 0:
     exit(0)
 card_infos = []
-face_value = '500'
+face_value = '500*4'
 ind = 0
 for ex in exchange_codes:
     ind = ind + 1

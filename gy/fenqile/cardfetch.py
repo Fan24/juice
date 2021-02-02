@@ -153,7 +153,8 @@ def get_card_code(detail_urls):
             sec_to_sleep = 60 - sec_to_sleep
             print('Waiting to get next sms code, progress:%d/%d' % (len(car_pool), len(detail_urls)))
             print('We will sleep %d(s)' % int(sec_to_sleep))
-            time.sleep(sec_to_sleep)
+            if sec_to_sleep > 0:
+                time.sleep(sec_to_sleep)
     for cp in car_pool:
         print('%s\t%s\t%s\t%s' % (cp['OrderID'], cp['OrderInfo'], cp['CardNo'], cp['CardPw']))
     print('Total:%d' % (len(car_pool)))
